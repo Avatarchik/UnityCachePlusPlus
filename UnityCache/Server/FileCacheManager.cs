@@ -10,15 +10,36 @@ namespace Com.Gabosgab.UnityCache.Server
 {
     public class FileCacheManager
     {
+        /// <summary>
+        /// Stores the location of the root folder for the cache
+        /// </summary>
         private String root; 
+
+        /// <summary>
+        /// Stores the location of the incoming assets folder
+        /// </summary>
         private String incoming;
+
+        /// <summary>
+        /// Stores the maxmimum allowed size of the cache in megabytes
+        /// </summary>
         private int maxSizeMB;
+
+        /// <summary>
+        /// Stores the current size of cache on disk in bytes
+        /// </summary>
         private UInt64 currSizeBytes;
+
+        /// <summary>
+        /// A lock used to allow synchronus access to this.currSizeBytes
+        /// </summary>
         private object currSizeBytesLock = new object();
 
         /// <summary>
-        /// Class constructor
+        /// The class construction
         /// </summary>
+        /// <param name="rootPath">The root path where the cache should be kept</param>
+        /// <param name="newMaxSizeMB">The maximum size of the cache in megabytes.  This server will exceed the limit in order to optimize asset throughput, so please allow a 10-20% buffer.</param>
         public FileCacheManager(String rootPath, int newMaxSizeMB)
         {
             root = rootPath;
@@ -38,19 +59,20 @@ namespace Com.Gabosgab.UnityCache.Server
             }
 
             // TODO: Flush the incoming folder of any dead files
-
             Console.WriteLine("Setting max cache size to {0} MB", maxSizeMB);
 
             // Queue a background task to size the cache folder
-            ThreadPool.QueueUserWorkItem(new WaitCallback(CalculateFolderSize));
+            ThreadPool.QueueUserWorkItem(new WaitCallback(this.CalculateFolderSize));
+
+            // TODO: Setup tracking of the file cleanup and additions and trigger cleanups as needed
         }
 
         /// <summary>
         /// Opens a file stream to the file that represents the temporary cache file.  The caller should 
         /// close the file and then call CompleteFile to move it to permanent storage.
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="hash"></param>
+        /// <param name="id">The id of the file</param>
+        /// <param name="hash">The hash of the file</param>
         public FileStream GetTemporaryFile(Guid id, string hash)
         {
             string path = Path.Combine(incoming, GetFileName(id, hash));
@@ -58,6 +80,12 @@ namespace Com.Gabosgab.UnityCache.Server
             return File.OpenWrite(path);
         }
 
+        /// <summary>
+        /// Opens a file stream to the given asset
+        /// </summary>
+        /// <param name="id">The Id of the file</param>
+        /// <param name="hash">The hash of the file</param>
+        /// <returns>A read only file handle to the asset</returns>
         public FileStream GetReadFileStream(Guid id, string hash)
         {
             string path = Path.Combine(root, GetFolder(hash), GetFileName(id, hash));
@@ -65,8 +93,10 @@ namespace Com.Gabosgab.UnityCache.Server
         } 
 
         /// <summary>
-        /// Moves the file out of temporary storage and into an accepted state
+        /// Moves the file from the incoming temporary folder and moves it to permanent storage
         /// </summary>
+        /// <param name="id">The Id of the file</param>
+        /// <param name="hash">The hash of the file</param>
         public void CompleteFile(Guid id, string hash)
         {
             string fileName = GetFileName(id, hash);
@@ -90,38 +120,44 @@ namespace Com.Gabosgab.UnityCache.Server
             Console.WriteLine("Moving {0} to permanent cache", fileName);
         }
 
+        /// <summary>
+        /// Returns the full path of a given file
+        /// </summary>
+        /// <param name="id">The Id of the file</param>
+        /// <param name="hash">The hash of the file</param>
+        /// <returns>The full path of the file</returns>
         public string GetFullFilePath(Guid id, string hash) 
         {
             return Path.Combine(root, GetFolder(hash), GetFileName(id, hash));
         }
 
         /// <summary>
-        /// 
+        /// Determines if the given file is cached or not
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="hash"></param>
-        /// <returns></returns>
+        /// <param name="id">The Id of the file</param>
+        /// <param name="hash">The hash of the file</param>
+        /// <returns>True if the file is cached, false otherwise</returns>
         public bool IsFileCached(Guid id, string hash)
         {
             return File.Exists(GetFullFilePath(id, hash));
         }
 
         /// <summary>
-        /// 
+        /// Returns a file nime for the given id and hash combination
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="hash"></param>
-        /// <returns></returns>
+        /// <param name="id">The Id of the file</param>
+        /// <param name="hash">The has of the file</param>
+        /// <returns>The filename of the file</returns>
         private static string GetFileName(Guid id, string hash)
         {
             return String.Format(CultureInfo.CurrentCulture, "{0}_{1}.data", id, hash);
         }
 
         /// <summary>
-        /// 
+        /// Returns the folder where the hash should be stored
         /// </summary>
-        /// <param name="hash"></param>
-        /// <returns></returns>
+        /// <param name="hash">The hash of the folder</param>
+        /// <returns>The file's folder name</returns>
         private static string GetFolder(string hash)
         {
             return hash.Substring(0, 2);
@@ -130,7 +166,7 @@ namespace Com.Gabosgab.UnityCache.Server
         /// <summary>
         /// Runs a full calculation of the cache folder size
         /// </summary>
-        /// <param name="stateInfo"></param>
+        /// <param name="stateInfo">Unused, ignored</param>
         private void CalculateFolderSize(Object stateInfo)
         {
             Console.WriteLine("Determining cache folder size");
@@ -149,6 +185,12 @@ namespace Com.Gabosgab.UnityCache.Server
             Console.WriteLine("Folder sizing complete, cache size: {0} MB", this.currSizeBytes / (1024 * 1024));
         }
 
+        /// <summary>
+        /// Gets the file size of a given file
+        /// </summary>
+        /// <param name="id">The Id of the file to get the size of</param>
+        /// <param name="hash">The has of the file</param>
+        /// <returns>The file size in bytes</returns>
         internal ulong GetFileSizeBytes(Guid id, string hash)
         {
             // TODO: Replace all String.Format with Path.Join

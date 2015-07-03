@@ -11,10 +11,10 @@ namespace Com.Gabosgab.UnityCache
     public static class UnityCacheUtilities
     {
         /// <summary>
-        /// Read the hash off the stream
+        /// Read the hash off the stream from a binary format to a string
         /// </summary>
-        /// <param name="stream"></param>
-        /// <returns></returns>
+        /// <param name="stream">The stream to read from</param>
+        /// <returns>The hash off the stream</returns>
         public static String ReadHash(Stream stream)
         {
             CheckStreamIsNotNull(stream);

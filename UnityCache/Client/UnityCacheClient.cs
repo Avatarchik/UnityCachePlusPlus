@@ -44,14 +44,20 @@ namespace Com.Gabosgab.UnityCache.Client
             IsConnected = true;
         }
 
+        /// <summary>
+        /// Closes the unity cache client
+        /// </summary>
         public void Close()
         {
-            client.Close();
-            stream.Close();
+            this.client.Close();
+            this.stream.Close();
 
             IsConnected = false;
         }
 
+        /// <summary>
+        /// Returns if the unity cache client is connected
+        /// </summary>
         public bool IsConnected
         {
             get;
@@ -96,7 +102,7 @@ namespace Com.Gabosgab.UnityCache.Client
             stream.Read(command, 0, command.Length);
             String strResult = Encoding.ASCII.GetString(command);
 
-            if (strResult == "-")
+            if(strResult == "-")
             {
                 result.Result = CacheResult.CacheMiss;
 
