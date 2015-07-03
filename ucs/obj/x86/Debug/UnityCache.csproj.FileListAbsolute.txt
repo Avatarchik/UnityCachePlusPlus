@@ -1,0 +1,8 @@
+\\psf\src\unityCacheServer\ucs\ucs\bin\Debug\UnityCache.exe.config
+\\psf\src\unityCacheServer\ucs\ucs\bin\Debug\UnityCache.exe
+\\psf\src\unityCacheServer\ucs\ucs\bin\Debug\UnityCache.pdb
+\\psf\src\unityCacheServer\ucs\ucs\bin\Debug\UnityCache.exe.CodeAnalysisLog.xml
+\\psf\src\unityCacheServer\ucs\ucs\bin\Debug\UnityCache.exe.lastcodeanalysissucceeded
+\\psf\src\unityCacheServer\ucs\ucs\obj\x86\Debug\UnityCache.exe
+\\psf\src\unityCacheServer\ucs\ucs\obj\x86\Debug\UnityCache.pdb
+\\psf\src\unityCacheServer\ucs\ucs\obj\x86\Debug\UnityCache.csprojResolveAssemblyReference.cache

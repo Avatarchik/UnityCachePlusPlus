@@ -1,0 +1,5 @@
+/Users/gabe/src/unityCacheServer/ucs/ucs/obj/x86/Debug/.NETFramework,Version=v4.0.AssemblyAttribute.cs
+/Users/gabe/src/unityCacheServer/ucs/ucs/bin/Debug/ucs.exe.mdb
+/Users/gabe/src/unityCacheServer/ucs/ucs/bin/Debug/ucs.exe
+/Users/gabe/src/unityCacheServer/ucs/ucs/obj/x86/Debug/ucs.exe
+/Users/gabe/src/unityCacheServer/ucs/ucs/obj/x86/Debug/ucs.exe.mdb

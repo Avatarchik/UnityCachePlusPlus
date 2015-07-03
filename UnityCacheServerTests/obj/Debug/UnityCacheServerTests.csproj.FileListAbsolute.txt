@@ -1,0 +1,7 @@
+\\psf\src\unityCacheServer\ucs\UnityCacheServerTests\bin\Debug\UnityCacheServerTests.dll
+\\psf\src\unityCacheServer\ucs\UnityCacheServerTests\bin\Debug\UnityCacheServerTests.pdb
+\\psf\src\unityCacheServer\ucs\UnityCacheServerTests\obj\Debug\UnityCacheServerTests.csprojResolveAssemblyReference.cache
+\\psf\src\unityCacheServer\ucs\UnityCacheServerTests\obj\Debug\UnityCacheServerTests.dll
+\\psf\src\unityCacheServer\ucs\UnityCacheServerTests\obj\Debug\UnityCacheServerTests.pdb
+\\psf\src\unityCacheServer\ucs\UnityCacheServerTests\bin\Debug\UnityCache.exe
+\\psf\src\unityCacheServer\ucs\UnityCacheServerTests\bin\Debug\UnityCache.pdb
