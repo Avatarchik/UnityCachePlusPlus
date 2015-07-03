@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Com.Gabosgab.UnityCache
 {
-    public class UnityCacheUtilities
+    public static class UnityCacheUtilities
     {
         /// <summary>
         /// Read the hash off the stream
@@ -63,18 +63,6 @@ namespace Com.Gabosgab.UnityCache
         }
 
         /// <summary>
-        /// Throws an exception is the stream is null
-        /// </summary>
-        /// <param name="stream"></param>
-        private static void CheckStreamIsNotNull(Stream stream)
-        {
-            if (stream == null)
-            {
-                throw new ArgumentNullException(Resource.StreamIsNullException);
-            }
-        }
-
-        /// <summary>
         /// Sends the ID and has on the network stream
         /// </summary>
         /// <param name="stream"></param>
@@ -107,7 +95,9 @@ namespace Com.Gabosgab.UnityCache
 
             StringBuilder hex = new StringBuilder(ba.Length * 2);
             foreach (byte b in ba)
+            {
                 hex.AppendFormat("{0:x2}", b);
+            }
             return hex.ToString();
         }
 
@@ -129,14 +119,26 @@ namespace Com.Gabosgab.UnityCache
                 throw new ArgumentException(String.Format(CultureInfo.InvariantCulture, "The binary key cannot have an odd number of digits: {0}", hexString));
             }
 
-            byte[] HexAsBytes = new byte[hexString.Length / 2];
-            for (int index = 0; index < HexAsBytes.Length; index++)
+            byte[] hexAsBytes = new byte[hexString.Length / 2];
+            for (int index = 0; index < hexAsBytes.Length; index++)
             {
                 string byteValue = hexString.Substring(index * 2, 2);
-                HexAsBytes[index] = byte.Parse(byteValue, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                hexAsBytes[index] = byte.Parse(byteValue, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
             }
 
-            return HexAsBytes;
+            return hexAsBytes;
+        }
+
+        /// <summary>
+        /// Throws an exception is the stream is null
+        /// </summary>
+        /// <param name="stream"></param>
+        private static void CheckStreamIsNotNull(Stream stream)
+        {
+            if (stream == null)
+            {
+                throw new ArgumentNullException(Resource.StreamIsNullException);
+            }
         }
     }
 }

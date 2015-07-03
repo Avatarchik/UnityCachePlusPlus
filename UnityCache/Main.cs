@@ -1,9 +1,8 @@
-using Com.Gabosgab.UnityCache.Server;
 using System;
+using Com.Gabosgab.UnityCache.Server;
 
 namespace Com.Gabosgab.UnityCache
 {
-
 	public static class MainClass
 	{
 		public static void Main ()

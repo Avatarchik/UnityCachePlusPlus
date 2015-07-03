@@ -7,12 +7,12 @@ using System.Runtime.InteropServices;
 // Information about this assembly is defined by the following attributes. 
 // Change them to the values specific to your project.
 
-[assembly: AssemblyTitle("UnityCache")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Unity Cache")]
+[assembly: AssemblyDescription("A .Net Unity Cache Libarary")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("")]
-[assembly: AssemblyCopyright("gabe")]
+[assembly: AssemblyCompany("Gabe Brown")]
+[assembly: AssemblyProduct("UnityCache")]
+[assembly: AssemblyCopyright("Copyright Gabe Brown 2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -31,7 +31,4 @@ using System.Runtime.InteropServices;
 
 // Mark the language our resource file uses 
 [assembly: NeutralResourcesLanguage("en")]
-
-//[assembly: AssemblyDelaySign(false)]
-//[assembly: AssemblyKeyFile("")]
 

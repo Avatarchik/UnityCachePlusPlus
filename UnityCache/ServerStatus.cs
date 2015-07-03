@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Com.Gabosgab.UnityCache
 {
+    /// <summary>
+    /// Describes the current server state
+    /// </summary>
     public enum ServerStatus
     {
         /// <summary>

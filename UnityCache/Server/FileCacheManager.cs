@@ -32,7 +32,8 @@ namespace Com.Gabosgab.UnityCache.Server
             }
             Console.WriteLine("Cache folder is ready: {0}", root);
 
-            if(!Directory.Exists(incoming)) {
+            if(!Directory.Exists(incoming)) 
+            {
                 Directory.CreateDirectory(incoming);
             }
 

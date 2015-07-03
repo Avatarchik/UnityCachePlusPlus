@@ -23,17 +23,19 @@ namespace Com.Gabosgab.UnityCache.Client
         public UnityCacheClient(String connection)
         {
             if (String.IsNullOrEmpty(connection))
+            {
                 throw new ArgumentNullException("Cannot pass a null server address.");
+            }
 
             // TODO: Make it so the user can specify the connection port number
             this.server = connection;
-            client = new TcpClient();
+            this.client = new TcpClient();
         }
 
         public void Connect()
         {
-            client.Connect(server, port);
-            stream = client.GetStream();
+            this.client.Connect(server, port);
+            this.stream = client.GetStream();
 
             // Send the preamble
             WriteClientVersion(stream);
@@ -57,8 +59,7 @@ namespace Com.Gabosgab.UnityCache.Client
         }
 
         public void Put(Guid id, string hash, byte[] data)
-        {
-           
+        {           
             byte[] command = Encoding.ASCII.GetBytes("p");
             stream.WriteByte(command[0]);
 
@@ -129,7 +130,6 @@ namespace Com.Gabosgab.UnityCache.Client
                     offset += len;
                 }
             }
-
 
             return result;
         }

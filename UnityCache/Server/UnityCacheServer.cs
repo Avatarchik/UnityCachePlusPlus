@@ -188,39 +188,41 @@ namespace Com.Gabosgab.UnityCache.Server
             {
                 Console.WriteLine("GET: Cache hit. {0} {1}", id, hash);
 
-                MemoryStream mStream = new MemoryStream(49);
-
-                // File is cached, send the response
-                // client <-- '+' (size <uint64>) (id <128bit GUID><128bit HASH>) + size bytes  --- server    (found in cache)
-                // Send command the file is cached
-                byte[] code = new byte[1];
-                code[0] = 43;
-                mStream.Write(code, 0, 1);
-
-                // Send the file size in bytes
-                ulong bytesToBeWritten = fileManager.GetFileSizeBytes(id, hash);   // Dumb off by 1 hack
-                byte[] fileSizeBytes = UnityCacheUtilities.GetUInt64AsAsciiBytes(bytesToBeWritten);
-                mStream.Write(fileSizeBytes, 0, fileSizeBytes.Length);
-
-                // Send id and hash 
-                UnityCacheUtilities.SendIdAndHashOnStream(mStream, id, hash);
-
-                // Send the file bytes
-                FileStream fileStream = fileManager.GetReadFileStream(id, hash);
-                byte[] buffer = new byte[streamBlockSize];
-
-                // Workaround to get enough bytes into a single packet so the Unity client doesn't choke
-                byte[] header = mStream.GetBuffer();
-                stream.Write(header, 0, header.Length);
-
-                while (bytesToBeWritten > 0)
+                using (MemoryStream mStream = new MemoryStream(49))
                 {
-                    int byteCount = (bytesToBeWritten > (ulong)streamBlockSize) ? streamBlockSize : (int)bytesToBeWritten;
-                    fileStream.Read(buffer, 0, byteCount);
-                    bytesToBeWritten -= (ulong)byteCount;
-                    stream.Write(buffer, 0, byteCount);
+
+                    // File is cached, send the response
+                    // client <-- '+' (size <uint64>) (id <128bit GUID><128bit HASH>) + size bytes  --- server    (found in cache)
+                    // Send command the file is cached
+                    byte[] code = new byte[1];
+                    code[0] = 43;
+                    mStream.Write(code, 0, 1);
+
+                    // Send the file size in bytes
+                    ulong bytesToBeWritten = fileManager.GetFileSizeBytes(id, hash);   // Dumb off by 1 hack
+                    byte[] fileSizeBytes = UnityCacheUtilities.GetUInt64AsAsciiBytes(bytesToBeWritten);
+                    mStream.Write(fileSizeBytes, 0, fileSizeBytes.Length);
+
+                    // Send id and hash 
+                    UnityCacheUtilities.SendIdAndHashOnStream(mStream, id, hash);
+
+                    // Send the file bytes
+                    FileStream fileStream = fileManager.GetReadFileStream(id, hash);
+                    byte[] buffer = new byte[streamBlockSize];
+
+                    // Workaround to get enough bytes into a single packet so the Unity client doesn't choke
+                    byte[] header = mStream.GetBuffer();
+                    stream.Write(header, 0, header.Length);
+
+                    while (bytesToBeWritten > 0)
+                    {
+                        int byteCount = (bytesToBeWritten > (ulong)streamBlockSize) ? streamBlockSize : (int)bytesToBeWritten;
+                        fileStream.Read(buffer, 0, byteCount);
+                        bytesToBeWritten -= (ulong)byteCount;
+                        stream.Write(buffer, 0, byteCount);
+                    }
+                    fileStream.Close();
                 }
-                fileStream.Close();
             }
 
 
