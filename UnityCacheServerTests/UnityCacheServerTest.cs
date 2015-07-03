@@ -35,7 +35,7 @@ namespace UnityCacheServerTests
                 client.Connect();
 
                 Guid id = Guid.NewGuid();
-                string hash = UnityCacheUtils.ByteArrayToString(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(DateTime.Now.ToString())));
+                string hash = UnityCacheUtilities.ByteArrayToString(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(DateTime.Now.ToString())));
 
                 Console.WriteLine("Requesting ID: {0}, Hash {1}", id, hash);
                 UnityCacheClientGetResult result;

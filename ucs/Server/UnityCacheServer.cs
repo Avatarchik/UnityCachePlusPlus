@@ -163,10 +163,10 @@ namespace Com.Gabosgab.UnityCache.Server
 		private void ProcessGet(NetworkStream stream) {
 
 			// Read ID
-            Guid id = UnityCacheUtils.ReadGuid(stream);
+            Guid id = UnityCacheUtilities.ReadGuid(stream);
 
 			// Read HASH
-            String hash = UnityCacheUtils.ReadHash(stream);
+            String hash = UnityCacheUtilities.ReadHash(stream);
 
 			Console.WriteLine ("GET: {0} => {1}", id, hash);
 
@@ -181,7 +181,7 @@ namespace Com.Gabosgab.UnityCache.Server
                 stream.Write(code, 0, 1);
 
                 // Send id and hash 
-                UnityCacheUtils.SendIdAndHashOnStream(stream, id, hash);
+                UnityCacheUtilities.SendIdAndHashOnStream(stream, id, hash);
             } 
             else
             {
@@ -198,11 +198,11 @@ namespace Com.Gabosgab.UnityCache.Server
 
                 // Send the file size in bytes
                 ulong bytesToBeWritten = fileManager.GetFileSizeBytes(id, hash);   // Dumb off by 1 hack
-                byte[] fileSizeBytes = UnityCacheUtils.GetUInt64AsASCIIBytes(bytesToBeWritten);
+                byte[] fileSizeBytes = UnityCacheUtilities.GetUInt64AsAsciiBytes(bytesToBeWritten);
                 mStream.Write(fileSizeBytes, 0, fileSizeBytes.Length);
 
                 // Send id and hash 
-                UnityCacheUtils.SendIdAndHashOnStream(mStream, id, hash);
+                UnityCacheUtilities.SendIdAndHashOnStream(mStream, id, hash);
 
                 // Send the file bytes
                 FileStream fileStream = fileManager.GetReadFileStream(id, hash);
@@ -239,13 +239,13 @@ namespace Com.Gabosgab.UnityCache.Server
 
 			byte[] buffer = new byte[16];
 			stream.Read(buffer, 0, 16);
-            ulong bytesToBeRead = UnityCacheUtils.GetASCIIBytesAsUInt64(buffer);
+            ulong bytesToBeRead = UnityCacheUtilities.GetAsciiBytesAsUInt64(buffer);
 
 			// Read ID
-            Guid id = UnityCacheUtils.ReadGuid(stream);
+            Guid id = UnityCacheUtilities.ReadGuid(stream);
 			
 			// Read HASH
-			String hash = UnityCacheUtils.ReadHash (stream);
+			String hash = UnityCacheUtilities.ReadHash (stream);
 
             Console.WriteLine("PUT: {0} {1}", id, hash);
 
@@ -256,8 +256,8 @@ namespace Com.Gabosgab.UnityCache.Server
             {
                 int len = (bytesToBeRead > (ulong)streamBlockSize) ? streamBlockSize : (int)bytesToBeRead;
                 ulong bytesReturned = (ulong)stream.Read(buffer, 0, len);
-                fileStream.Write(buffer, 0, (int)len);
-                bytesToBeRead -= (ulong)len;
+                fileStream.Write(buffer, 0, (int)bytesReturned);
+                bytesToBeRead -= (ulong)bytesReturned;
             }
             fileStream.Close();
 

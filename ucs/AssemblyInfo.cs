@@ -25,7 +25,9 @@ using System.Runtime.InteropServices;
 // if desired. See the Mono documentation for more information about signing.
 
 [assembly: ComVisible(false)]
-[assembly: CLSCompliant(true)]
+
+// Usage of UInt64 and ulong violates CLS compliance
+[assembly: CLSCompliant(false)]
 
 //[assembly: AssemblyDelaySign(false)]
 //[assembly: AssemblyKeyFile("")]

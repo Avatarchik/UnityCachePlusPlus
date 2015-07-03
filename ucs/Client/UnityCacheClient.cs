@@ -68,7 +68,7 @@ namespace Com.Gabosgab.UnityCache.Client
             byte[] lenBytes = Encoding.ASCII.GetBytes(lengthStr);
             stream.Write(lenBytes, 0, lenBytes.Length);
 
-            UnityCacheUtils.SendIdAndHashOnStream(stream, id, hash);
+            UnityCacheUtilities.SendIdAndHashOnStream(stream, id, hash);
 
             stream.Write(data, 0, data.Length);
 
@@ -90,7 +90,7 @@ namespace Com.Gabosgab.UnityCache.Client
             byte[] command = Encoding.ASCII.GetBytes("g");
             stream.WriteByte(command[0]);
 
-            UnityCacheUtils.SendIdAndHashOnStream(stream, id, hash);
+            UnityCacheUtilities.SendIdAndHashOnStream(stream, id, hash);
 
             stream.Read(command, 0, command.Length);
             String strResult = Encoding.ASCII.GetString(command);
@@ -100,8 +100,8 @@ namespace Com.Gabosgab.UnityCache.Client
                 result.Result = CacheResult.CacheMiss;
 
                 // Read and toss the hash since we don't need it
-                UnityCacheUtils.ReadGuid(stream);
-                UnityCacheUtils.ReadHash(stream);
+                UnityCacheUtilities.ReadGuid(stream);
+                UnityCacheUtilities.ReadHash(stream);
             }
             else if(strResult == "+")
             {
@@ -110,11 +110,11 @@ namespace Com.Gabosgab.UnityCache.Client
                 // Read the length of the file
                 byte[] buffer = new byte[16];
                 stream.Read(buffer, 0, 16);
-                ulong bytesToBeRead = UnityCacheUtils.GetASCIIBytesAsUInt64(buffer);
+                ulong bytesToBeRead = UnityCacheUtilities.GetAsciiBytesAsUInt64(buffer);
 
                 // Read the ID and hash.  Toss this, we don't need it
-                UnityCacheUtils.ReadGuid(stream);
-                UnityCacheUtils.ReadHash(stream);
+                UnityCacheUtilities.ReadGuid(stream);
+                UnityCacheUtilities.ReadHash(stream);
 
                 // Read the reply from the server
                 buffer = new byte[bytesToBeRead];

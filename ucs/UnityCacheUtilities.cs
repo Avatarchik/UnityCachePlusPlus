@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Com.Gabosgab.UnityCache
 {
-    public class UnityCacheUtils
+    public class UnityCacheUtilities
     {
         /// <summary>
         /// Read the hash off the stream
@@ -17,6 +17,8 @@ namespace Com.Gabosgab.UnityCache
         /// <returns></returns>
         public static String ReadHash(Stream stream)
         {
+            CheckStreamIsNotNull(stream);
+
             byte[] buffer = new byte[16];
             stream.Read(buffer, 0, 16);
             String hash = ByteArrayToString(buffer);
@@ -24,19 +26,21 @@ namespace Com.Gabosgab.UnityCache
             return hash;
         }
 
-        public static UInt64 GetASCIIBytesAsUInt64(byte[] bytes)
+        /// <summary>
+        /// Convert an array of bytes representing an ASCII encoded UInt64 and converts them to a UInt64
+        /// </summary>
+        /// <param name="value">An array of 16 bytes to be converted to an UInt64</param>
+        /// <returns>The value of the number represented in bytes</returns>
+        public static UInt64 GetAsciiBytesAsUInt64(byte[] value)
         {
-            String lenCount = Encoding.ASCII.GetString(bytes);
-
-            // TODO: Fix this parsing of asset sizes to the proper value
-            ulong bytesToBeRead = UInt64.Parse(lenCount, NumberStyles.AllowHexSpecifier);
-
+            String lenCount = Encoding.ASCII.GetString(value);
+            ulong bytesToBeRead = UInt64.Parse(lenCount, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
             return bytesToBeRead;
         }
 
-        public static byte[] GetUInt64AsASCIIBytes(UInt64 num)
+        public static byte[] GetUInt64AsAsciiBytes(UInt64 number)
         {
-            string sizeHex = num.ToString("X16");
+            string sizeHex = number.ToString("X16", CultureInfo.InvariantCulture);
             byte[] fileSizeBytes = Encoding.ASCII.GetBytes(sizeHex);
             return fileSizeBytes;
         }
@@ -48,6 +52,7 @@ namespace Com.Gabosgab.UnityCache
         /// <returns></returns>
         public static Guid ReadGuid(Stream stream)
         {
+            CheckStreamIsNotNull(stream);
 
             byte[] buffer = new byte[16];
             stream.Read(buffer, 0, 16);
@@ -58,6 +63,18 @@ namespace Com.Gabosgab.UnityCache
         }
 
         /// <summary>
+        /// Throws an exception is the stream is null
+        /// </summary>
+        /// <param name="stream"></param>
+        private static void CheckStreamIsNotNull(Stream stream)
+        {
+            if (stream == null)
+            {
+                throw new ArgumentNullException(Resource.StreamIsNullException);
+            }
+        }
+
+        /// <summary>
         /// Sends the ID and has on the network stream
         /// </summary>
         /// <param name="stream"></param>
@@ -65,6 +82,8 @@ namespace Com.Gabosgab.UnityCache
         /// <param name="hash"></param>
         public static void SendIdAndHashOnStream(Stream stream, Guid id, string hash)
         {
+            CheckStreamIsNotNull(stream);
+
             // Respond with id and items
             byte[] idBytes = id.ToByteArray();
             stream.Write(idBytes, 0, idBytes.Length);
@@ -81,6 +100,11 @@ namespace Com.Gabosgab.UnityCache
         /// <returns></returns>
         public static string ByteArrayToString(byte[] ba)
         {
+            if(ba == null)
+            {
+                throw new ArgumentNullException(Resource.ByteArrayIsNullException);
+            }
+
             StringBuilder hex = new StringBuilder(ba.Length * 2);
             foreach (byte b in ba)
                 hex.AppendFormat("{0:x2}", b);
@@ -90,10 +114,16 @@ namespace Com.Gabosgab.UnityCache
         /// <summary>
         /// Convers the string representation of hex to binary
         /// </summary>
-        /// <param name="hexString"></param>
-        /// <returns></returns>
+        /// <param name="hexString">The string to be converted</param>
+        /// <returns>A byte array representing the string in hex.  If null or empty string was passed, null is returned.</returns>
         public static byte[] ConvertHexStringToByteArray(string hexString)
         {
+            if(String.IsNullOrEmpty(hexString))
+            {
+                // An empty or null array just returns null
+                return null;
+            }
+
             if (hexString.Length % 2 != 0)
             {
                 throw new ArgumentException(String.Format(CultureInfo.InvariantCulture, "The binary key cannot have an odd number of digits: {0}", hexString));

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -18,11 +19,11 @@ namespace Com.Gabosgab.UnityCache.Server
         /// <summary>
         /// Class constructor
         /// </summary>
-        public FileCacheManager(String rootPath, int newMaxSizeMb)
+        public FileCacheManager(String rootPath, int newMaxSizeMB)
         {
             root = rootPath;
-            incoming = String.Format("{0}{1}{2}", root, Path.DirectorySeparatorChar, "incoming");
-            maxSizeMB = newMaxSizeMb;
+            incoming = Path.Combine(root, "incoming");
+            maxSizeMB = newMaxSizeMB;
 
             if(!Directory.Exists(root))
             {
@@ -51,20 +52,14 @@ namespace Com.Gabosgab.UnityCache.Server
         /// <param name="hash"></param>
         public FileStream GetTemporaryFile(Guid id, string hash)
         {
-            string path = String.Format("{0}{1}{2}", incoming, Path.DirectorySeparatorChar, GetFileName(id, hash));
+            string path = Path.Combine(incoming, GetFileName(id, hash));
 
             return File.OpenWrite(path);
         }
 
         public FileStream GetReadFileStream(Guid id, string hash)
         {
-            string path = String.Format("{0}{1}{2}{3}{4}",
-                root,
-                Path.DirectorySeparatorChar,
-                GetFolder(hash),
-                Path.DirectorySeparatorChar,
-                GetFileName(id, hash));
-
+            string path = Path.Combine(root, GetFolder(hash), GetFileName(id, hash));
             return File.OpenRead(path);
         } 
 
@@ -74,9 +69,8 @@ namespace Com.Gabosgab.UnityCache.Server
         public void CompleteFile(Guid id, string hash)
         {
             string fileName = GetFileName(id, hash);
-            string targetFolder = GetFolder(hash);
 
-            String src = String.Format("{0}{1}{2}", incoming, Path.DirectorySeparatorChar, fileName);
+            String src = Path.Combine(incoming, fileName);
             String dest = GetFullFilePath(id, hash);
 
             if (!Directory.Exists(Path.GetDirectoryName(dest))) 
@@ -97,9 +91,7 @@ namespace Com.Gabosgab.UnityCache.Server
 
         public string GetFullFilePath(Guid id, string hash) 
         {
-            string fileName = GetFileName(id, hash);
-            string targetFolder = GetFolder(hash);
-            return String.Format("{0}{1}{2}{3}{4}", root, Path.DirectorySeparatorChar, targetFolder, Path.DirectorySeparatorChar, fileName);
+            return Path.Combine(root, GetFolder(hash), GetFileName(id, hash));
         }
 
         /// <summary>
@@ -119,9 +111,9 @@ namespace Com.Gabosgab.UnityCache.Server
         /// <param name="id"></param>
         /// <param name="hash"></param>
         /// <returns></returns>
-        private string GetFileName(Guid id, string hash)
+        private static string GetFileName(Guid id, string hash)
         {
-            return String.Format("{0}_{1}.data", id, hash);
+            return String.Format(CultureInfo.CurrentCulture, "{0}_{1}.data", id, hash);
         }
 
         /// <summary>
@@ -129,7 +121,7 @@ namespace Com.Gabosgab.UnityCache.Server
         /// </summary>
         /// <param name="hash"></param>
         /// <returns></returns>
-        private string GetFolder(string hash)
+        private static string GetFolder(string hash)
         {
             return hash.Substring(0, 2);
         }
@@ -158,15 +150,8 @@ namespace Com.Gabosgab.UnityCache.Server
 
         internal ulong GetFileSizeBytes(Guid id, string hash)
         {
-
             // TODO: Replace all String.Format with Path.Join
-            FileInfo info = new FileInfo(String.Format("{0}{1}{2}{3}{4}",
-                root,
-                Path.DirectorySeparatorChar,
-                GetFolder(hash),
-                Path.DirectorySeparatorChar,
-                GetFileName(id, hash)));
-
+            FileInfo info = new FileInfo(GetFullFilePath(id, hash));
             return (ulong)info.Length;
         }
     }
