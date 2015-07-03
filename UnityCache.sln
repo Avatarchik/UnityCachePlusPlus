@@ -3,9 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityCache", "ucs\UnityCache.csproj", "{E4E90F7E-915F-4A98-A3B0-F0FC9609CDDB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityCache", "UnityCache\UnityCache.csproj", "{E4E90F7E-915F-4A98-A3B0-F0FC9609CDDB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityCacheTests", "UnityCacheServerTests\UnityCacheTests.csproj", "{A3082169-F2DC-4C16-B4BE-44C07B5CA33F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityCacheTests", "UnityCacheTests\UnityCacheTests.csproj", "{A3082169-F2DC-4C16-B4BE-44C07B5CA33F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{67D29E7D-BA18-462C-97B4-B7EF5EC379A4}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
