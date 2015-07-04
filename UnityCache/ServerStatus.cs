@@ -1,4 +1,8 @@
-﻿using System;
+﻿// <copyright file="ServerStatus.cs" company="Gabe Brown">
+//     Copyright (c) Gabe Brown. All rights reserved.
+// </copyright>
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,7 +20,7 @@ namespace Com.Gabosgab.UnityCache
         Stopped,
 
         /// <summary>
-        /// The server is running and accetping connections
+        /// The server is running and accepting connections
         /// </summary>
         Running
     }

@@ -1,3 +1,7 @@
+// <copyright file="AssemblyInfo.cs" company="Gabe Brown">
+//     Copyright (c) Gabe Brown. All rights reserved.
+// </copyright>
+
 using System;
 using System.Reflection;
 using System.Resources;

@@ -1,4 +1,8 @@
-﻿using System;
+﻿// <copyright file="UnityCacheServerTest.cs" company="Gabe Brown">
+//     Copyright (c) Gabe Brown. All rights reserved.
+// </copyright>
+
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Security.Cryptography;
 using System.Text;

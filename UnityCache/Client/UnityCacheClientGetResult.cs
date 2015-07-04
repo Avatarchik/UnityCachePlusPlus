@@ -1,4 +1,8 @@
-﻿using System;
+﻿// <copyright file="UnityCacheClientGetResult.cs" company="Gabe Brown">
+//     Copyright (c) Gabe Brown. All rights reserved.
+// </copyright>
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,29 +27,40 @@ namespace Com.Gabosgab.UnityCache.Client
 
     public class UnityCacheClientGetResult
     {
+        /// <summary>
+        /// Gets or sets the requested id 
+        /// </summary>
         public Guid Id
         {
             get;
             set;
         }
 
+        /// <summary>
+        /// Gets or sets the requested hash
+        /// </summary>
         public string Hash
         {
             get;
             set;
         }
 
+        /// <summary>
+        /// Gets or sets the cache result
+        /// </summary>
         public CacheResult Result
         {
             get;
             set;
         }
 
+        /// <summary>
+        /// Gets or sets the data received from the request
+        /// </summary>
         public byte[] Data
         {
             get;
             set;
         }
-
     }
 }

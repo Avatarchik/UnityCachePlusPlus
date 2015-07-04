@@ -1,4 +1,8 @@
-﻿using System;
+﻿// <copyright file="UnityCacheUtilities.cs" company="Gabe Brown">
+//     Copyright (c) Gabe Brown. All rights reserved.
+// </copyright>
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -27,9 +31,9 @@ namespace Com.Gabosgab.UnityCache
         }
 
         /// <summary>
-        /// Convert an array of bytes representing an ASCII encoded UInt64 and converts them to a UInt64
+        /// Convert an array of bytes representing an ASCII encoded 64-bit unsigned integer
         /// </summary>
-        /// <param name="value">An array of 16 bytes to be converted to an UInt64</param>
+        /// <param name="value">An array of 16 bytes to be converted to an unsigned 64 bit integer</param>
         /// <returns>The value of the number represented in bytes</returns>
         public static UInt64 GetAsciiBytesAsUInt64(byte[] value)
         {
@@ -46,10 +50,10 @@ namespace Com.Gabosgab.UnityCache
         }
 
         /// <summary>
-        /// Read Guid off the stream
+        /// Read GUID off the stream
         /// </summary>
-        /// <param name="stream"></param>
-        /// <returns></returns>
+        /// <param name="stream">The stream to id from</param>
+        /// <returns>A GUID that represents the bytes read from the stream</returns>
         public static Guid ReadGuid(Stream stream)
         {
             CheckStreamIsNotNull(stream);
@@ -65,9 +69,9 @@ namespace Com.Gabosgab.UnityCache
         /// <summary>
         /// Sends the ID and has on the network stream
         /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="id"></param>
-        /// <param name="hash"></param>
+        /// <param name="stream">The stream to send the id and hash on</param>
+        /// <param name="id">The id to send</param>
+        /// <param name="hash">The hash to send</param>
         public static void SendIdAndHashOnStream(Stream stream, Guid id, string hash)
         {
             CheckStreamIsNotNull(stream);
@@ -82,10 +86,10 @@ namespace Com.Gabosgab.UnityCache
         }
 
         /// <summary>
-        /// Converst a byte array of hex to string
+        /// Converts a byte array of hex to string
         /// </summary>
-        /// <param name="ba"></param>
-        /// <returns></returns>
+        /// <param name="ba">The byte array of the items to convert to string</param>
+        /// <returns>Returns a hex representation of the string</returns>
         public static string ByteArrayToString(byte[] ba)
         {
             if(ba == null)
@@ -132,7 +136,7 @@ namespace Com.Gabosgab.UnityCache
         /// <summary>
         /// Throws an exception is the stream is null
         /// </summary>
-        /// <param name="stream"></param>
+        /// <param name="stream">Checks the string is not null</param>
         private static void CheckStreamIsNotNull(Stream stream)
         {
             if (stream == null)

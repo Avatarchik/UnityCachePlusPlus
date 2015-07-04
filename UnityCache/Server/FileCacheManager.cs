@@ -1,4 +1,8 @@
-﻿using System;
+﻿// <copyright file="FileCacheManager.cs" company="Gabe Brown">
+//     Copyright (c) Gabe Brown. All rights reserved.
+// </copyright>
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -21,37 +25,37 @@ namespace Com.Gabosgab.UnityCache.Server
         private String incoming;
 
         /// <summary>
-        /// Stores the maxmimum allowed size of the cache in megabytes
+        /// Stores the maximum allowed size of the cache in megabytes
         /// </summary>
         private int maxSizeMB;
 
         /// <summary>
         /// Stores the current size of cache on disk in bytes
         /// </summary>
-        private UInt64 currSizeBytes;
+        private UInt64 cacheSizeBytes;
 
         /// <summary>
-        /// A lock used to allow synchronus access to this.currSizeBytes
+        /// A lock used to allow synchronous access to this.cacheSizeBytes
         /// </summary>
-        private object currSizeBytesLock = new object();
+        private object cacheSizeBytesLock = new object();
 
         /// <summary>
-        /// The class construction
+        /// Initializes a new instance of the FileCacheManager class.
         /// </summary>
         /// <param name="rootPath">The root path where the cache should be kept</param>
         /// <param name="newMaxSizeMB">The maximum size of the cache in megabytes.  This server will exceed the limit in order to optimize asset throughput, so please allow a 10-20% buffer.</param>
         public FileCacheManager(String rootPath, int newMaxSizeMB)
         {
-            root = rootPath;
-            incoming = Path.Combine(root, "incoming");
-            maxSizeMB = newMaxSizeMB;
+            this.root = rootPath;
+            this.incoming = Path.Combine(this.root, "incoming");
+            this.maxSizeMB = newMaxSizeMB;
 
-            if(!Directory.Exists(root))
+            if(!Directory.Exists(this.root))
             {
-                Console.WriteLine("Initializing cache folder: {0}", root);
-                Directory.CreateDirectory(root);
+                Console.WriteLine("Initializing cache folder: {0}", this.root);
+                Directory.CreateDirectory(this.root);
             }
-            Console.WriteLine("Cache folder is ready: {0}", root);
+            Console.WriteLine("Cache folder is ready: {0}", this.root);
 
             if(!Directory.Exists(incoming)) 
             {
@@ -59,7 +63,7 @@ namespace Com.Gabosgab.UnityCache.Server
             }
 
             // TODO: Flush the incoming folder of any dead files
-            Console.WriteLine("Setting max cache size to {0} MB", maxSizeMB);
+            Console.WriteLine("Setting max cache size to {0} MB", this.maxSizeMB);
 
             // Queue a background task to size the cache folder
             ThreadPool.QueueUserWorkItem(new WaitCallback(this.CalculateFolderSize));
@@ -73,6 +77,7 @@ namespace Com.Gabosgab.UnityCache.Server
         /// </summary>
         /// <param name="id">The id of the file</param>
         /// <param name="hash">The hash of the file</param>
+        /// <returns>A file stream to the temporary file</returns>
         public FileStream GetTemporaryFile(Guid id, string hash)
         {
             string path = Path.Combine(incoming, GetFileName(id, hash));
@@ -88,7 +93,7 @@ namespace Com.Gabosgab.UnityCache.Server
         /// <returns>A read only file handle to the asset</returns>
         public FileStream GetReadFileStream(Guid id, string hash)
         {
-            string path = Path.Combine(root, GetFolder(hash), GetFileName(id, hash));
+            string path = Path.Combine(this.root, GetFolder(hash), GetFileName(id, hash));
             return File.OpenRead(path);
         } 
 
@@ -110,9 +115,9 @@ namespace Com.Gabosgab.UnityCache.Server
             }
 
             // For some reason the cache server is asking to overwrite the file, 
-            if (IsFileCached(id, hash))
+            if (this.IsFileCached(id, hash))
             {
-                File.Delete(GetFullFilePath(id, hash));
+                File.Delete(this.GetFullFilePath(id, hash));
             }
 
             File.Move(src, dest);
@@ -128,7 +133,7 @@ namespace Com.Gabosgab.UnityCache.Server
         /// <returns>The full path of the file</returns>
         public string GetFullFilePath(Guid id, string hash) 
         {
-            return Path.Combine(root, GetFolder(hash), GetFileName(id, hash));
+            return Path.Combine(this.root, GetFolder(hash), GetFileName(id, hash));
         }
 
         /// <summary>
@@ -143,7 +148,7 @@ namespace Com.Gabosgab.UnityCache.Server
         }
 
         /// <summary>
-        /// Returns a file nime for the given id and hash combination
+        /// Returns a file name for the given id and hash combination
         /// </summary>
         /// <param name="id">The Id of the file</param>
         /// <param name="hash">The has of the file</param>
@@ -171,18 +176,18 @@ namespace Com.Gabosgab.UnityCache.Server
         {
             Console.WriteLine("Determining cache folder size");
 
-            IEnumerable<string> files = Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories);
+            IEnumerable<string> files = Directory.EnumerateFiles(this.root, "*", SearchOption.AllDirectories);
 
             foreach (string file in files)
             {
                 FileInfo info = new FileInfo(file);
-                lock (this.currSizeBytesLock)
+                lock (this.cacheSizeBytesLock)
                 {
-                    this.currSizeBytes += (ulong)info.Length;
+                    this.cacheSizeBytes += (ulong)info.Length;
                 }
             }
 
-            Console.WriteLine("Folder sizing complete, cache size: {0} MB", this.currSizeBytes / (1024 * 1024));
+            Console.WriteLine("Folder sizing complete, cache size: {0} MB", this.cacheSizeBytes / (1024 * 1024));
         }
 
         /// <summary>

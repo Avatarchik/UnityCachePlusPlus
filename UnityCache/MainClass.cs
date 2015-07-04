@@ -1,3 +1,7 @@
+// <copyright file="MainClass.cs" company="Gabe Brown">
+//     Copyright (c) Gabe Brown. All rights reserved.
+// </copyright>
+
 using System;
 using Com.Gabosgab.UnityCache.Server;
 

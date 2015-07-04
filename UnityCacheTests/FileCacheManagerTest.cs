@@ -1,4 +1,8 @@
-﻿using Com.Gabosgab.UnityCache.Server;
+﻿// <copyright file="FileCacheManagerTest.cs" company="Gabe Brown">
+//     Copyright (c) Gabe Brown. All rights reserved.
+// </copyright>
+
+using Com.Gabosgab.UnityCache.Server;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;

@@ -1,4 +1,8 @@
-﻿using System;
+﻿// <copyright file="UnityCacheClient.cs" company="Gabe Brown">
+//     Copyright (c) Gabe Brown. All rights reserved.
+// </copyright>
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,16 +14,35 @@ namespace Com.Gabosgab.UnityCache.Client
 {
     public class UnityCacheClient
     {
+        /// <summary>
+        /// The server hostname to connect to
+        /// </summary>
         private string server = null;
+
+        /// <summary>
+        /// The port to connect to
+        /// </summary>
         private int port = 8125;
+
+        /// <summary>
+        /// The TCP Client the client uses to connect
+        /// </summary>
         private TcpClient client;
+
+        /// <summary>
+        /// The network string that the client communicates with
+        /// </summary>
         private NetworkStream stream;
+
+        /// <summary>
+        /// The block size to use for copying data to/from the stream
+        /// </summary>
         private int streamBlockSize = 1024;
 
         /// <summary>
-        /// Constructs the Unity Cache Client
+        /// Initializes a new instance of the UnityCacheClient class.
         /// </summary>
-        /// <param name="newServer">The host and port of the server to connect to.  If port == 0, default of 8125 will be used.</param>
+        /// <param name="connection">The host of the server to connect to.</param>
         public UnityCacheClient(String connection)
         {
             if (String.IsNullOrEmpty(connection))
@@ -34,14 +57,14 @@ namespace Com.Gabosgab.UnityCache.Client
 
         public void Connect()
         {
-            this.client.Connect(server, port);
-            this.stream = client.GetStream();
+            this.client.Connect(this.server, this.port);
+            this.stream = this.client.GetStream();
 
             // Send the preamble
-            WriteClientVersion(stream);
-            ReadServerVersion(stream);
+            WriteClientVersion(this.stream);
+            ReadServerVersion(this.stream);
 
-            IsConnected = true;
+            this.IsConnected = true;
         }
 
         /// <summary>
@@ -56,7 +79,7 @@ namespace Com.Gabosgab.UnityCache.Client
         }
 
         /// <summary>
-        /// Returns if the unity cache client is connected
+        /// Gets a value indicating whether the client is connected to the server.
         /// </summary>
         public bool IsConnected
         {
@@ -83,10 +106,11 @@ namespace Com.Gabosgab.UnityCache.Client
 
 
         /// <summary>
-        /// Performs a get synchronusly
+        /// Performs a get synchronously
         /// </summary>
         /// <param name="id">The ID of the file to get</param>
         /// <param name="hash">The hash of the files contents</param>
+        /// <returns>The result of the get operation</returns>
         public UnityCacheClientGetResult Get(Guid id, String hash)
         {
             UnityCacheClientGetResult result = new UnityCacheClientGetResult();
