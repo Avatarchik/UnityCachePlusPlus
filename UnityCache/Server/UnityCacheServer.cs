@@ -2,24 +2,25 @@
 //     Copyright (c) Gabe Brown. All rights reserved.
 // </copyright>
 
-using System;
-using System.Net.Sockets;
-using System.Net;
-using System.Text;
 using Com.Gabosgab.UnityCache.Properties;
-using System.IO;
+using System;
 using System.Globalization;
-using System.Threading;
-
+using System.IO;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
 
 namespace Com.Gabosgab.UnityCache.Server
 {
+    /// <summary>
+    /// The Unity cache server 
+    /// </summary>
 	public class UnityCacheServer
 	{
         /// <summary>
         /// The protocol version of the server
         /// </summary>
-        private int PROTOCOL_VERSION = 255;
+        private int protocolVersion = 255;
 
         /// <summary>
         /// The socket used to communicate with clients
@@ -62,16 +63,21 @@ namespace Com.Gabosgab.UnityCache.Server
                 Settings.Default.MaxCacheSizeMB);
 		}
 
-        // TODO: Have the event share what was put
+        /// <summary>
+        /// An event that is triggered when a put is processed from a client
+        /// </summary>
         public event EventHandler OnPutProcessed;
 
-        // TODO: Have the event share what was get
+        /// <summary>
+        /// An event that is triggered when a get is processed from a client
+        /// </summary>
         public event EventHandler OnGetProcessed;
 
 		/// <summary>
 		/// Start this instance.
 		/// </summary>
-		public void Start() {
+		public void Start() 
+        {
             this.status = ServerStatus.Running;
 			this.socket = new TcpListener (IPAddress.Any, Settings.Default.Port);
             this.socket.Start();
@@ -83,14 +89,16 @@ namespace Com.Gabosgab.UnityCache.Server
         /// <summary>
         /// Used to accept sockets
         /// </summary>
-		private void StartAccept() {
+		private void StartAccept() 
+        {
             this.socket.BeginAcceptTcpClient(DoAcceptTcpClientCallback, socket);
 		}
 
 		/// <summary>
 		/// Stop this instance.
 		/// </summary>
-		public void Stop() {
+		public void Stop() 
+        {
             this.status = ServerStatus.Stopped;
             this.socket.Stop();
         }
@@ -112,7 +120,6 @@ namespace Com.Gabosgab.UnityCache.Server
 
             try
             {
-
                 TcpClient client = socket.EndAcceptTcpClient(ar);
 
                 Console.WriteLine("Accepting connection from " + client.Client.RemoteEndPoint.ToString());
@@ -127,7 +134,7 @@ namespace Com.Gabosgab.UnityCache.Server
                 Console.WriteLine("Client Version {0}", clientVersion);
 
                 // Tell the client our version number as a 32-bit integer
-                string serverVersion = this.PROTOCOL_VERSION.ToString("x8", CultureInfo.InvariantCulture);
+                string serverVersion = this.protocolVersion.ToString("x8", CultureInfo.InvariantCulture);
                 Console.WriteLine(serverVersion);
                 byte[] serverVersionBytes = Encoding.UTF8.GetBytes(serverVersion);
                 stream.Write(serverVersionBytes, 0, serverVersionBytes.Length);
@@ -138,7 +145,6 @@ namespace Com.Gabosgab.UnityCache.Server
                 {
                     switch (command)
                     {
-
                         case 112: //'p'
                             Console.WriteLine("Process Put");
                             this.ProcessPut(stream);
@@ -152,7 +158,6 @@ namespace Com.Gabosgab.UnityCache.Server
                         default:
                             // No command was sent, go ahead and close the connection.
                             break;
-
                     }
                 }
 
@@ -166,13 +171,12 @@ namespace Com.Gabosgab.UnityCache.Server
             }
         }
 
-
 		/// <summary>
 		/// Processes the get command
 		/// </summary>
 		/// <param name="stream">The stream to the client</param>
-        private void ProcessGet(NetworkStream stream) {
-
+        private void ProcessGet(NetworkStream stream) 
+        {
 			// Read ID
             Guid id = UnityCacheUtilities.ReadGuid(stream);
 
@@ -200,10 +204,7 @@ namespace Com.Gabosgab.UnityCache.Server
 
                 using (MemoryStream mStream = new MemoryStream(49))
                 {
-
                     // File is cached, send the response
-                    // client <-- '+' (size <uint64>) (id <128bit GUID><128bit HASH>) + size bytes  --- server    (found in cache)
-                    // Send command the file is cached
                     byte[] code = new byte[1];
                     code[0] = 43;
                     mStream.Write(code, 0, 1);
@@ -231,23 +232,24 @@ namespace Com.Gabosgab.UnityCache.Server
                         bytesToBeWritten -= (ulong)byteCount;
                         stream.Write(buffer, 0, byteCount);
                     }
+
                     fileStream.Close();
                 }
             }
 
-
             // Notify listeners a get was processed
             if (this.OnGetProcessed != null)
+            {
                 this.OnGetProcessed(this, new EventArgs());
-
+            }
 		}
 
 		/// <summary>
         /// Process the client put request
 		/// </summary>
 		/// <param name="stream">The stream to the client requesting the put</param>
-		private void ProcessPut(NetworkStream stream) {
-
+		private void ProcessPut(NetworkStream stream) 
+        {
 			byte[] buffer = new byte[16];
 			stream.Read(buffer, 0, 16);
             ulong bytesToBeRead = UnityCacheUtilities.GetAsciiBytesAsUInt64(buffer);
@@ -270,14 +272,16 @@ namespace Com.Gabosgab.UnityCache.Server
                 fileStream.Write(buffer, 0, (int)bytesReturned);
                 bytesToBeRead -= (ulong)bytesReturned;
             }
+
             fileStream.Close();
 
             fileManager.CompleteFile(id, hash);
 
             // Notify listeners a get was processed
             if (this.OnPutProcessed != null)
+            {
                 this.OnPutProcessed(this, new EventArgs());
+            }
 		}
 	}
 }
-

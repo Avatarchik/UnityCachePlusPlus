@@ -6,12 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 
 namespace Com.Gabosgab.UnityCache.Server
 {
+    /// <summary>
+    /// The file cache manager used to managing all files in the cache
+    /// </summary>
     public class FileCacheManager
     {
         /// <summary>
@@ -55,6 +56,7 @@ namespace Com.Gabosgab.UnityCache.Server
                 Console.WriteLine("Initializing cache folder: {0}", this.root);
                 Directory.CreateDirectory(this.root);
             }
+
             Console.WriteLine("Cache folder is ready: {0}", this.root);
 
             if(!Directory.Exists(incoming)) 

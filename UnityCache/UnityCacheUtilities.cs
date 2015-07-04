@@ -3,15 +3,15 @@
 // </copyright>
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Net.Sockets;
 using System.Text;
 
 namespace Com.Gabosgab.UnityCache
 {
+    /// <summary>
+    /// Unity cache server utility class
+    /// </summary>
     public static class UnityCacheUtilities
     {
         /// <summary>
@@ -42,6 +42,11 @@ namespace Com.Gabosgab.UnityCache
             return bytesToBeRead;
         }
 
+        /// <summary>
+        /// Convers the number into an array of bytes
+        /// </summary>
+        /// <param name="number">The number to convert</param>
+        /// <returns>Returns the number as an array of bytes</returns>
         public static byte[] GetUInt64AsAsciiBytes(UInt64 number)
         {
             string sizeHex = number.ToString("X16", CultureInfo.InvariantCulture);
@@ -63,7 +68,6 @@ namespace Com.Gabosgab.UnityCache
             Guid id = new Guid(buffer);
 
             return id;
-
         }
 
         /// <summary>
@@ -102,6 +106,7 @@ namespace Com.Gabosgab.UnityCache
             {
                 hex.AppendFormat("{0:x2}", b);
             }
+
             return hex.ToString();
         }
 

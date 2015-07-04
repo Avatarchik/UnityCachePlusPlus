@@ -3,15 +3,14 @@
 // </copyright>
 
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
 namespace Com.Gabosgab.UnityCache.Client
 {
+    /// <summary>
+    /// The Unity cache client used to communicate to a Unity Cache server
+    /// </summary>
     public class UnityCacheClient
     {
         /// <summary>
@@ -55,6 +54,9 @@ namespace Com.Gabosgab.UnityCache.Client
             this.client = new TcpClient();
         }
 
+        /// <summary>
+        /// Connect to the server
+        /// </summary>
         public void Connect()
         {
             this.client.Connect(this.server, this.port);
@@ -87,23 +89,27 @@ namespace Com.Gabosgab.UnityCache.Client
             private set;
         }
 
+        /// <summary>
+        /// Puts a file to the server
+        /// </summary>
+        /// <param name="id">The id of the file</param>
+        /// <param name="hash">The hash of the file</param>
+        /// <param name="data">The data contained in the file</param>
         public void Put(Guid id, string hash, byte[] data)
         {           
             byte[] command = Encoding.ASCII.GetBytes("p");
             stream.WriteByte(command[0]);
 
             // Send the length as ASCII
-            ulong uDataLen = (ulong)data.Length;
-            String lengthStr = uDataLen.ToString("X16");
+            ulong dataLength = (ulong)data.Length;
+            String lengthStr = dataLength.ToString("X16");
             byte[] lenBytes = Encoding.ASCII.GetBytes(lengthStr);
             stream.Write(lenBytes, 0, lenBytes.Length);
 
             UnityCacheUtilities.SendIdAndHashOnStream(stream, id, hash);
 
             stream.Write(data, 0, data.Length);
-
         }
-
 
         /// <summary>
         /// Performs a get synchronously
@@ -164,6 +170,10 @@ namespace Com.Gabosgab.UnityCache.Client
             return result;
         }
 
+        /// <summary>
+        /// Reads the server version off the channel
+        /// </summary>
+        /// <param name="stream">The stream to read the version off</param>
         private void ReadServerVersion(NetworkStream stream)
         {
             byte[] data = new byte[8];
@@ -172,6 +182,10 @@ namespace Com.Gabosgab.UnityCache.Client
             Console.WriteLine("Server version {0}", version);
         }
 
+        /// <summary>
+        /// Writes the client version on the stream
+        /// </summary>
+        /// <param name="stream">The stream to write the version to</param>
         private static void WriteClientVersion(NetworkStream stream)
         {
             byte[] version = Encoding.UTF8.GetBytes("fe");
