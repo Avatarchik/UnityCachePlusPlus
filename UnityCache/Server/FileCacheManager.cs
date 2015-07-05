@@ -2,14 +2,14 @@
 //     Copyright (c) Gabe Brown. All rights reserved.
 // </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Threading;
-
-namespace Com.Gabosgab.UnityCache.Server
+namespace Com.Yocero.UnityCache.Server
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.IO;
+    using System.Threading;
+
     /// <summary>
     /// The file cache manager used to managing all files in the cache
     /// </summary>
@@ -18,12 +18,12 @@ namespace Com.Gabosgab.UnityCache.Server
         /// <summary>
         /// Stores the location of the root folder for the cache
         /// </summary>
-        private String root; 
+        private string root; 
 
         /// <summary>
         /// Stores the location of the incoming assets folder
         /// </summary>
-        private String incoming;
+        private string incoming;
 
         /// <summary>
         /// Stores the maximum allowed size of the cache in megabytes
@@ -33,7 +33,7 @@ namespace Com.Gabosgab.UnityCache.Server
         /// <summary>
         /// Stores the current size of cache on disk in bytes
         /// </summary>
-        private UInt64 cacheSizeBytes;
+        private ulong cacheSizeBytes;
 
         /// <summary>
         /// A lock used to allow synchronous access to this.cacheSizeBytes
@@ -45,13 +45,13 @@ namespace Com.Gabosgab.UnityCache.Server
         /// </summary>
         /// <param name="rootPath">The root path where the cache should be kept</param>
         /// <param name="newMaxSizeMB">The maximum size of the cache in megabytes.  This server will exceed the limit in order to optimize asset throughput, so please allow a 10-20% buffer.</param>
-        public FileCacheManager(String rootPath, int newMaxSizeMB)
+        public FileCacheManager(string rootPath, int newMaxSizeMB)
         {
             this.root = rootPath;
             this.incoming = Path.Combine(this.root, "incoming");
             this.maxSizeMB = newMaxSizeMB;
 
-            if(!Directory.Exists(this.root))
+            if (!Directory.Exists(this.root))
             {
                 Console.WriteLine("Initializing cache folder: {0}", this.root);
                 Directory.CreateDirectory(this.root);
@@ -59,9 +59,9 @@ namespace Com.Gabosgab.UnityCache.Server
 
             Console.WriteLine("Cache folder is ready: {0}", this.root);
 
-            if(!Directory.Exists(incoming)) 
+            if (!Directory.Exists(this.incoming)) 
             {
-                Directory.CreateDirectory(incoming);
+                Directory.CreateDirectory(this.incoming);
             }
 
             // TODO: Flush the incoming folder of any dead files
@@ -82,7 +82,7 @@ namespace Com.Gabosgab.UnityCache.Server
         /// <returns>A file stream to the temporary file</returns>
         public FileStream GetTemporaryFile(Guid id, string hash)
         {
-            string path = Path.Combine(incoming, GetFileName(id, hash));
+            string path = Path.Combine(this.incoming, GetFileName(id, hash));
 
             return File.OpenWrite(path);
         }
@@ -108,8 +108,8 @@ namespace Com.Gabosgab.UnityCache.Server
         {
             string fileName = GetFileName(id, hash);
 
-            String src = Path.Combine(incoming, fileName);
-            String dest = GetFullFilePath(id, hash);
+            string src = Path.Combine(this.incoming, fileName);
+            string dest = this.GetFullFilePath(id, hash);
 
             if (!Directory.Exists(Path.GetDirectoryName(dest))) 
             {
@@ -146,7 +146,20 @@ namespace Com.Gabosgab.UnityCache.Server
         /// <returns>True if the file is cached, false otherwise</returns>
         public bool IsFileCached(Guid id, string hash)
         {
-            return File.Exists(GetFullFilePath(id, hash));
+            return File.Exists(this.GetFullFilePath(id, hash));
+        }
+
+        /// <summary>
+        /// Gets the file size of a given file
+        /// </summary>
+        /// <param name="id">The Id of the file to get the size of</param>
+        /// <param name="hash">The has of the file</param>
+        /// <returns>The file size in bytes</returns>
+        internal ulong GetFileSizeBytes(Guid id, string hash)
+        {
+            // TODO: Replace all string.Format with Path.Join
+            FileInfo info = new FileInfo(this.GetFullFilePath(id, hash));
+            return (ulong)info.Length;
         }
 
         /// <summary>
@@ -157,7 +170,7 @@ namespace Com.Gabosgab.UnityCache.Server
         /// <returns>The filename of the file</returns>
         private static string GetFileName(Guid id, string hash)
         {
-            return String.Format(CultureInfo.CurrentCulture, "{0}_{1}.data", id, hash);
+            return string.Format(CultureInfo.CurrentCulture, "{0}_{1}.data", id, hash);
         }
 
         /// <summary>
@@ -174,7 +187,7 @@ namespace Com.Gabosgab.UnityCache.Server
         /// Runs a full calculation of the cache folder size
         /// </summary>
         /// <param name="stateInfo">Unused, ignored</param>
-        private void CalculateFolderSize(Object stateInfo)
+        private void CalculateFolderSize(object stateInfo)
         {
             Console.WriteLine("Determining cache folder size");
 
@@ -190,19 +203,6 @@ namespace Com.Gabosgab.UnityCache.Server
             }
 
             Console.WriteLine("Folder sizing complete, cache size: {0} MB", this.cacheSizeBytes / (1024 * 1024));
-        }
-
-        /// <summary>
-        /// Gets the file size of a given file
-        /// </summary>
-        /// <param name="id">The Id of the file to get the size of</param>
-        /// <param name="hash">The has of the file</param>
-        /// <returns>The file size in bytes</returns>
-        internal ulong GetFileSizeBytes(Guid id, string hash)
-        {
-            // TODO: Replace all String.Format with Path.Join
-            FileInfo info = new FileInfo(GetFullFilePath(id, hash));
-            return (ulong)info.Length;
         }
     }
 }

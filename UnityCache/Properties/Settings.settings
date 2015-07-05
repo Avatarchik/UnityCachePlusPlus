@@ -2,7 +2,7 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="UnityCacheServer.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="CacheRootPath" Type="System.String" Scope="User">
+    <Setting Name="CacheRootPath" Type="System.string" Scope="User">
       <Value Profile="(Default)">cache</Value>
     </Setting>
     <Setting Name="MaxCacheSizeMB" Type="System.Int32" Scope="User">

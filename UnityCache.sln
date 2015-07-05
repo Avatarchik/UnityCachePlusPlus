@@ -10,6 +10,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{67D29E7D-BA18-462C-97B4-B7EF5EC379A4}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		CustomDictionary.xml = CustomDictionary.xml
+		UnityCache.snk = UnityCache.snk
 	EndProjectSection
 EndProject
 Global

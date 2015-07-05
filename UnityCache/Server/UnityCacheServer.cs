@@ -2,21 +2,21 @@
 //     Copyright (c) Gabe Brown. All rights reserved.
 // </copyright>
 
-using Com.Gabosgab.UnityCache.Properties;
-using System;
-using System.Globalization;
-using System.IO;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
-
-namespace Com.Gabosgab.UnityCache.Server
+namespace Com.Yocero.UnityCache.Server
 {
+    using System;
+    using System.Globalization;
+    using System.IO;
+    using System.Net;
+    using System.Net.Sockets;
+    using System.Text;
+    using Com.Yocero.UnityCache.Properties;
+
     /// <summary>
     /// The Unity cache server 
     /// </summary>
-	public class UnityCacheServer
-	{
+    public class UnityCacheServer
+    {
         /// <summary>
         /// The protocol version of the server
         /// </summary>
@@ -25,7 +25,7 @@ namespace Com.Gabosgab.UnityCache.Server
         /// <summary>
         /// The socket used to communicate with clients
         /// </summary>
-		private TcpListener socket;
+        private TcpListener socket;
 
         /// <summary>
         /// The servers current status
@@ -43,25 +43,14 @@ namespace Com.Gabosgab.UnityCache.Server
         private int streamBlockSize = 1024;
 
         /// <summary>
-        /// Gets the server status
-        /// </summary>
-        public ServerStatus Status
-        {
-            get 
-            {
-                return status;
-            }
-        }
-
-        /// <summary>
         /// Initializes a new instance of the UnityCacheServer class.
         /// </summary>
-		public UnityCacheServer()
-		{
-            fileManager = new FileCacheManager(
+        public UnityCacheServer()
+        {
+            this.fileManager = new FileCacheManager(
                 Path.GetFullPath(Settings.Default.CacheRootPath),
                 Settings.Default.MaxCacheSizeMB);
-		}
+        }
 
         /// <summary>
         /// An event that is triggered when a put is processed from a client
@@ -73,34 +62,45 @@ namespace Com.Gabosgab.UnityCache.Server
         /// </summary>
         public event EventHandler OnGetProcessed;
 
-		/// <summary>
-		/// Start this instance.
-		/// </summary>
-		public void Start() 
+        /// <summary>
+        /// Gets the server status
+        /// </summary>
+        public ServerStatus Status
+        {
+            get
+            {
+                return this.status;
+            }
+        }
+
+        /// <summary>
+        /// Start this instance.
+        /// </summary>
+        public void Start() 
         {
             this.status = ServerStatus.Running;
-			this.socket = new TcpListener (IPAddress.Any, Settings.Default.Port);
+            this.socket = new TcpListener(IPAddress.Any, Settings.Default.Port);
             this.socket.Start();
-			StartAccept ();
+            this.StartAccept();
 
             Console.WriteLine("Server listening for conenctions on port {0}...", Settings.Default.Port);
-		}
+        }
+
+        /// <summary>
+        /// Stop this instance.
+        /// </summary>
+        public void Stop() 
+        {
+            this.status = ServerStatus.Stopped;
+            this.socket.Stop();
+        }
 
         /// <summary>
         /// Used to accept sockets
         /// </summary>
-		private void StartAccept() 
+        private void StartAccept()
         {
-            this.socket.BeginAcceptTcpClient(DoAcceptTcpClientCallback, socket);
-		}
-
-		/// <summary>
-		/// Stop this instance.
-		/// </summary>
-		public void Stop() 
-        {
-            this.status = ServerStatus.Stopped;
-            this.socket.Stop();
+            this.socket.BeginAcceptTcpClient(this.DoAcceptTcpClientCallback, this.socket);
         }
 
         /// <summary>
@@ -116,11 +116,11 @@ namespace Com.Gabosgab.UnityCache.Server
             }
 
             // Allow other threads to listen for connections while this one is processed
-            StartAccept();
+            this.StartAccept();
 
             try
             {
-                TcpClient client = socket.EndAcceptTcpClient(ar);
+                TcpClient client = this.socket.EndAcceptTcpClient(ar);
 
                 Console.WriteLine("Accepting connection from " + client.Client.RemoteEndPoint.ToString());
 
@@ -129,7 +129,7 @@ namespace Com.Gabosgab.UnityCache.Server
                 // Read client version
                 byte[] versionBytes = new byte[2];
                 stream.Read(versionBytes, 0, 2);
-                String versionHex = Encoding.UTF8.GetString(versionBytes);
+                string versionHex = Encoding.UTF8.GetString(versionBytes);
                 int clientVersion = Convert.ToInt32(versionHex, 16);
                 Console.WriteLine("Client Version {0}", clientVersion);
 
@@ -145,12 +145,12 @@ namespace Com.Gabosgab.UnityCache.Server
                 {
                     switch (command)
                     {
-                        case 112: //'p'
+                        case 112: 
                             Console.WriteLine("Process Put");
                             this.ProcessPut(stream);
                             break;
 
-                        case 103:   // 'g'
+                        case 103:
                             Console.WriteLine("Process GET");
                             this.ProcessGet(stream);
                             break;
@@ -167,23 +167,23 @@ namespace Com.Gabosgab.UnityCache.Server
             catch (IOException)
             {
                 Console.WriteLine("Connection was closed by the client.");
-                StartAccept();
+                this.StartAccept();
             }
         }
 
-		/// <summary>
-		/// Processes the get command
-		/// </summary>
-		/// <param name="stream">The stream to the client</param>
+        /// <summary>
+        /// Processes the get command
+        /// </summary>
+        /// <param name="stream">The stream to the client</param>
         private void ProcessGet(NetworkStream stream) 
         {
-			// Read ID
+            // Read ID
             Guid id = UnityCacheUtilities.ReadGuid(stream);
 
-			// Read HASH
-            String hash = UnityCacheUtilities.ReadHash(stream);
+            // Read HASH
+            string hash = UnityCacheUtilities.ReadHash(stream);
 
-			Console.WriteLine ("GET: {0} => {1}", id, hash);
+            Console.WriteLine("GET: {0} => {1}", id, hash);
 
             if (!this.fileManager.IsFileCached(id, hash))
             {
@@ -202,32 +202,32 @@ namespace Com.Gabosgab.UnityCache.Server
             {
                 Console.WriteLine("GET: Cache hit. {0} {1}", id, hash);
 
-                using (MemoryStream mStream = new MemoryStream(49))
+                using (MemoryStream memoryStream = new MemoryStream(49))
                 {
                     // File is cached, send the response
                     byte[] code = new byte[1];
                     code[0] = 43;
-                    mStream.Write(code, 0, 1);
+                    memoryStream.Write(code, 0, 1);
 
                     // Send the file size in bytes
-                    ulong bytesToBeWritten = fileManager.GetFileSizeBytes(id, hash);   // Dumb off by 1 hack
-                    byte[] fileSizeBytes = UnityCacheUtilities.GetUInt64AsAsciiBytes(bytesToBeWritten);
-                    mStream.Write(fileSizeBytes, 0, fileSizeBytes.Length);
+                    ulong bytesToBeWritten = this.fileManager.GetFileSizeBytes(id, hash);   // Dumb off by 1 hack
+                    byte[] fileSizeBytes = UnityCacheUtilities.GetUlongAsAsciiBytes(bytesToBeWritten);
+                    memoryStream.Write(fileSizeBytes, 0, fileSizeBytes.Length);
 
                     // Send id and hash 
-                    UnityCacheUtilities.SendIdAndHashOnStream(mStream, id, hash);
+                    UnityCacheUtilities.SendIdAndHashOnStream(memoryStream, id, hash);
 
                     // Send the file bytes
-                    FileStream fileStream = fileManager.GetReadFileStream(id, hash);
-                    byte[] buffer = new byte[streamBlockSize];
+                    FileStream fileStream = this.fileManager.GetReadFileStream(id, hash);
+                    byte[] buffer = new byte[this.streamBlockSize];
 
                     // Workaround to get enough bytes into a single packet so the Unity client doesn't choke
-                    byte[] header = mStream.GetBuffer();
+                    byte[] header = memoryStream.GetBuffer();
                     stream.Write(header, 0, header.Length);
 
                     while (bytesToBeWritten > 0)
                     {
-                        int byteCount = (bytesToBeWritten > (ulong)streamBlockSize) ? streamBlockSize : (int)bytesToBeWritten;
+                        int byteCount = (bytesToBeWritten > (ulong)this.streamBlockSize) ? this.streamBlockSize : (int)bytesToBeWritten;
                         fileStream.Read(buffer, 0, byteCount);
                         bytesToBeWritten -= (ulong)byteCount;
                         stream.Write(buffer, 0, byteCount);
@@ -242,32 +242,32 @@ namespace Com.Gabosgab.UnityCache.Server
             {
                 this.OnGetProcessed(this, new EventArgs());
             }
-		}
+        }
 
-		/// <summary>
+        /// <summary>
         /// Process the client put request
-		/// </summary>
-		/// <param name="stream">The stream to the client requesting the put</param>
-		private void ProcessPut(NetworkStream stream) 
+        /// </summary>
+        /// <param name="stream">The stream to the client requesting the put</param>
+        private void ProcessPut(NetworkStream stream) 
         {
-			byte[] buffer = new byte[16];
-			stream.Read(buffer, 0, 16);
+            byte[] buffer = new byte[16];
+            stream.Read(buffer, 0, 16);
             ulong bytesToBeRead = UnityCacheUtilities.GetAsciiBytesAsUInt64(buffer);
 
-			// Read ID
+            // Read ID
             Guid id = UnityCacheUtilities.ReadGuid(stream);
-			
-			// Read HASH
-			String hash = UnityCacheUtilities.ReadHash (stream);
+            
+            // Read HASH
+            string hash = UnityCacheUtilities.ReadHash(stream);
 
             Console.WriteLine("PUT: {0} {1}", id, hash);
 
-            FileStream fileStream = fileManager.GetTemporaryFile(id, hash);
-            buffer = new byte[streamBlockSize];
+            FileStream fileStream = this.fileManager.GetTemporaryFile(id, hash);
+            buffer = new byte[this.streamBlockSize];
 
             while (bytesToBeRead > 0)
             {
-                int len = (bytesToBeRead > (ulong)streamBlockSize) ? streamBlockSize : (int)bytesToBeRead;
+                int len = (bytesToBeRead > (ulong)this.streamBlockSize) ? this.streamBlockSize : (int)bytesToBeRead;
                 ulong bytesReturned = (ulong)stream.Read(buffer, 0, len);
                 fileStream.Write(buffer, 0, (int)bytesReturned);
                 bytesToBeRead -= (ulong)bytesReturned;
@@ -275,13 +275,13 @@ namespace Com.Gabosgab.UnityCache.Server
 
             fileStream.Close();
 
-            fileManager.CompleteFile(id, hash);
+            this.fileManager.CompleteFile(id, hash);
 
             // Notify listeners a get was processed
             if (this.OnPutProcessed != null)
             {
                 this.OnPutProcessed(this, new EventArgs());
             }
-		}
-	}
+        }
+    }
 }

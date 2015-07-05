@@ -2,10 +2,10 @@
 //     Copyright (c) Gabe Brown. All rights reserved.
 // </copyright>
 
-using System;
-
-namespace Com.Gabosgab.UnityCache.Client
+namespace Com.Yocero.UnityCache.Client
 {
+    using System;
+
     /// <summary>
     /// Describes what the status of the cache get request was
     /// </summary>

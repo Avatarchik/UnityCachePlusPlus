@@ -2,13 +2,13 @@
 //     Copyright (c) Gabe Brown. All rights reserved.
 // </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Com.Gabosgab.UnityCache
+namespace Com.Yocero.UnityCache
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
     /// <summary>
     /// Describes the current server state
     /// </summary>

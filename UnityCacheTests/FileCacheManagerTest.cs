@@ -2,7 +2,7 @@
 //     Copyright (c) Gabe Brown. All rights reserved.
 // </copyright>
 
-using Com.Gabosgab.UnityCache.Server;
+using Com.Yocero.UnityCache.Server;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;

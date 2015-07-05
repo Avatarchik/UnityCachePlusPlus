@@ -6,9 +6,9 @@ using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Security.Cryptography;
 using System.Text;
-using Com.Gabosgab.UnityCache.Client;
-using Com.Gabosgab.UnityCache;
-using Com.Gabosgab.UnityCache.Server;
+using Com.Yocero.UnityCache.Client;
+using Com.Yocero.UnityCache;
+using Com.Yocero.UnityCache.Server;
 using System.Threading;
 
 namespace UnityCacheServerTests

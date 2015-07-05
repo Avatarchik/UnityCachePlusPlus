@@ -2,13 +2,13 @@
 //     Copyright (c) Gabe Brown. All rights reserved.
 // </copyright>
 
-using System;
-using System.Globalization;
-using System.IO;
-using System.Text;
-
-namespace Com.Gabosgab.UnityCache
+namespace Com.Yocero.UnityCache
 {
+    using System;
+    using System.Globalization;
+    using System.IO;
+    using System.Text;
+
     /// <summary>
     /// Unity cache server utility class
     /// </summary>
@@ -19,13 +19,13 @@ namespace Com.Gabosgab.UnityCache
         /// </summary>
         /// <param name="stream">The stream to read from</param>
         /// <returns>The hash off the stream</returns>
-        public static String ReadHash(Stream stream)
+        public static string ReadHash(Stream stream)
         {
             CheckStreamIsNotNull(stream);
 
             byte[] buffer = new byte[16];
             stream.Read(buffer, 0, 16);
-            String hash = ByteArrayToString(buffer);
+            string hash = ByteArrayToString(buffer);
 
             return hash;
         }
@@ -35,10 +35,10 @@ namespace Com.Gabosgab.UnityCache
         /// </summary>
         /// <param name="value">An array of 16 bytes to be converted to an unsigned 64 bit integer</param>
         /// <returns>The value of the number represented in bytes</returns>
-        public static UInt64 GetAsciiBytesAsUInt64(byte[] value)
+        public static ulong GetAsciiBytesAsUInt64(byte[] value)
         {
-            String lenCount = Encoding.ASCII.GetString(value);
-            ulong bytesToBeRead = UInt64.Parse(lenCount, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+            string lenCount = Encoding.ASCII.GetString(value);
+            ulong bytesToBeRead = ulong.Parse(lenCount, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
             return bytesToBeRead;
         }
 
@@ -47,7 +47,7 @@ namespace Com.Gabosgab.UnityCache
         /// </summary>
         /// <param name="number">The number to convert</param>
         /// <returns>Returns the number as an array of bytes</returns>
-        public static byte[] GetUInt64AsAsciiBytes(UInt64 number)
+        public static byte[] GetUlongAsAsciiBytes(ulong number)
         {
             string sizeHex = number.ToString("X16", CultureInfo.InvariantCulture);
             byte[] fileSizeBytes = Encoding.ASCII.GetBytes(sizeHex);
@@ -85,7 +85,7 @@ namespace Com.Gabosgab.UnityCache
             stream.Write(idBytes, 0, idBytes.Length);
 
             // Respond with hash
-            byte[] hashBytes = ConvertHexStringToByteArray(hash);
+            byte[] hashBytes = ConvertHexstringToByteArray(hash);
             stream.Write(hashBytes, 0, hashBytes.Length);
         }
 
@@ -96,7 +96,7 @@ namespace Com.Gabosgab.UnityCache
         /// <returns>Returns a hex representation of the string</returns>
         public static string ByteArrayToString(byte[] ba)
         {
-            if(ba == null)
+            if (ba == null)
             {
                 throw new ArgumentNullException(Resource.ByteArrayIsNullException);
             }
@@ -113,25 +113,25 @@ namespace Com.Gabosgab.UnityCache
         /// <summary>
         /// Convers the string representation of hex to binary
         /// </summary>
-        /// <param name="hexString">The string to be converted</param>
+        /// <param name="hexstring">The string to be converted</param>
         /// <returns>A byte array representing the string in hex.  If null or empty string was passed, null is returned.</returns>
-        public static byte[] ConvertHexStringToByteArray(string hexString)
+        public static byte[] ConvertHexstringToByteArray(string hexstring)
         {
-            if(String.IsNullOrEmpty(hexString))
+            if (string.IsNullOrEmpty(hexstring))
             {
                 // An empty or null array just returns null
                 return null;
             }
 
-            if (hexString.Length % 2 != 0)
+            if (hexstring.Length % 2 != 0)
             {
-                throw new ArgumentException(String.Format(CultureInfo.InvariantCulture, "The binary key cannot have an odd number of digits: {0}", hexString));
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "The binary key cannot have an odd number of digits: {0}", hexstring));
             }
 
-            byte[] hexAsBytes = new byte[hexString.Length / 2];
+            byte[] hexAsBytes = new byte[hexstring.Length / 2];
             for (int index = 0; index < hexAsBytes.Length; index++)
             {
-                string byteValue = hexString.Substring(index * 2, 2);
+                string byteValue = hexstring.Substring(index * 2, 2);
                 hexAsBytes[index] = byte.Parse(byteValue, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
             }
 

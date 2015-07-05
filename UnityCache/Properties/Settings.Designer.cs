@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Com.Gabosgab.UnityCache.Properties {
+namespace Com.Yocero.UnityCache.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

@@ -2,11 +2,11 @@
 //     Copyright (c) Gabe Brown. All rights reserved.
 // </copyright>
 
-using Com.Gabosgab.UnityCache.Server;
-using System;
-
-namespace Com.Gabosgab.UnityCache
+namespace Com.Yocero.UnityCache
 {
+    using System;
+    using Com.Yocero.UnityCache.Server;
+
     /// <summary>
     /// Main runtime class
     /// </summary>
