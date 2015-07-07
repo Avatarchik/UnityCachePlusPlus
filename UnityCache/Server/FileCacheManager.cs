@@ -9,12 +9,18 @@ namespace Com.Yocero.UnityCache.Server
     using System.Globalization;
     using System.IO;
     using System.Threading;
+    using NLog;
 
     /// <summary>
     /// The file cache manager used to managing all files in the cache
     /// </summary>
     public class FileCacheManager
     {
+        /// <summary>
+        /// Stores the current class log manager
+        /// </summary>
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         /// <summary>
         /// Stores the location of the root folder for the cache
         /// </summary>
@@ -53,11 +59,11 @@ namespace Com.Yocero.UnityCache.Server
 
             if (!Directory.Exists(this.root))
             {
-                Console.WriteLine("Initializing cache folder: {0}", this.root);
+                logger.Warn(CultureInfo.CurrentCulture, "Initializing cache folder: {0}", this.root);
                 Directory.CreateDirectory(this.root);
             }
 
-            Console.WriteLine("Cache folder is ready: {0}", this.root);
+            logger.Warn(CultureInfo.CurrentCulture, "Cache folder is ready: {0}", this.root);
 
             if (!Directory.Exists(this.incoming)) 
             {
@@ -65,7 +71,7 @@ namespace Com.Yocero.UnityCache.Server
             }
 
             // TODO: Flush the incoming folder of any dead files
-            Console.WriteLine("Setting max cache size to {0} MB", this.maxSizeMB);
+            logger.Warn(CultureInfo.CurrentCulture, "Setting max cache size to {0} MB", this.maxSizeMB);
 
             // Queue a background task to size the cache folder
             ThreadPool.QueueUserWorkItem(new WaitCallback(this.CalculateFolderSize));
@@ -124,7 +130,7 @@ namespace Com.Yocero.UnityCache.Server
 
             File.Move(src, dest);
 
-            Console.WriteLine("Moving {0} to permanent cache", fileName);
+            logger.Info(CultureInfo.CurrentCulture, "Moving {0} to permanent cache", fileName);
         }
 
         /// <summary>
@@ -189,7 +195,7 @@ namespace Com.Yocero.UnityCache.Server
         /// <param name="stateInfo">Unused, ignored</param>
         private void CalculateFolderSize(object stateInfo)
         {
-            Console.WriteLine("Determining cache folder size");
+            logger.Warn("Determining cache folder size");
 
             IEnumerable<string> files = Directory.EnumerateFiles(this.root, "*", SearchOption.AllDirectories);
 
@@ -202,7 +208,7 @@ namespace Com.Yocero.UnityCache.Server
                 }
             }
 
-            Console.WriteLine("Folder sizing complete, cache size: {0} MB", this.cacheSizeBytes / (1024 * 1024));
+            logger.Warn(CultureInfo.CurrentCulture, "Folder sizing complete, cache size: {0} MB", this.cacheSizeBytes / (1024 * 1024));
         }
     }
 }

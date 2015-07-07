@@ -8,12 +8,23 @@ namespace Com.Yocero.UnityCache.Client
     using System.Globalization;
     using System.Net.Sockets;
     using System.Text;
+    using NLog;
 
     /// <summary>
     /// The Unity cache client used to communicate to a Unity Cache server
     /// </summary>
-    public class UnityCacheClient 
+    public class UnityCacheClient : IDisposable
     {
+        /// <summary>
+        /// Stores the current class log manager
+        /// </summary>
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        /// <summary>
+        /// Determines if the class has been disposed or not
+        /// </summary>
+        private bool disposed = false;
+
         /// <summary>
         /// The server hostname to connect to
         /// </summary>
@@ -62,6 +73,15 @@ namespace Com.Yocero.UnityCache.Client
         {
             get;
             private set;
+        }
+
+        /// <summary>
+        /// Implements Dispose framework
+        /// </summary>
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -177,6 +197,30 @@ namespace Com.Yocero.UnityCache.Client
         }
 
         /// <summary>
+        /// Disposes of 
+        /// </summary>
+        /// <param name="disposing">Determines if the object should be disposed</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (this.disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                // Free any other managed objects here. 
+                if (this.client.Connected)
+                {
+                    this.client.Close();
+                }
+            }
+
+            // Free any unmanaged objects here. 
+            this.disposed = true;
+        }
+
+        /// <summary>
         /// Writes the client version on the stream
         /// </summary>
         /// <param name="stream">The stream to write the version to</param>
@@ -195,7 +239,7 @@ namespace Com.Yocero.UnityCache.Client
             byte[] data = new byte[8];
             readStream.Read(data, 0, data.Length);
             string version = Encoding.UTF8.GetString(data);
-            Console.WriteLine("Server version {0}", version);
+            logger.Info(CultureInfo.CurrentCulture, "Server version {0}", version);
         }
     }
 }

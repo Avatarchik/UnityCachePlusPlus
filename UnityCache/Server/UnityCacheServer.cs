@@ -11,12 +11,18 @@ namespace Com.Yocero.UnityCache.Server
     using System.Net.Sockets;
     using System.Text;
     using Com.Yocero.UnityCache.Properties;
+    using NLog;
 
     /// <summary>
     /// The Unity cache server 
     /// </summary>
     public class UnityCacheServer
     {
+        /// <summary>
+        /// Stores a reference to the log manager
+        /// </summary>
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         /// <summary>
         /// The protocol version of the server
         /// </summary>
@@ -83,7 +89,7 @@ namespace Com.Yocero.UnityCache.Server
             this.socket.Start();
             this.StartAccept();
 
-            Console.WriteLine("Server listening for conenctions on port {0}...", Settings.Default.Port);
+            logger.Info(CultureInfo.CurrentCulture, "Server listening for connections on port {0}...", Settings.Default.Port);
         }
 
         /// <summary>
@@ -122,7 +128,7 @@ namespace Com.Yocero.UnityCache.Server
             {
                 TcpClient client = this.socket.EndAcceptTcpClient(ar);
 
-                Console.WriteLine("Accepting connection from " + client.Client.RemoteEndPoint.ToString());
+                logger.Info("Accepting connection from " + client.Client.RemoteEndPoint.ToString());
 
                 NetworkStream stream = client.GetStream();
 
@@ -131,11 +137,11 @@ namespace Com.Yocero.UnityCache.Server
                 stream.Read(versionBytes, 0, 2);
                 string versionHex = Encoding.UTF8.GetString(versionBytes);
                 int clientVersion = Convert.ToInt32(versionHex, 16);
-                Console.WriteLine("Client Version {0}", clientVersion);
+                logger.Info(CultureInfo.CurrentCulture, "Client Version {0}", clientVersion);
 
                 // Tell the client our version number as a 32-bit integer
                 string serverVersion = this.protocolVersion.ToString("x8", CultureInfo.InvariantCulture);
-                Console.WriteLine(serverVersion);
+                logger.Info(serverVersion);
                 byte[] serverVersionBytes = Encoding.UTF8.GetBytes(serverVersion);
                 stream.Write(serverVersionBytes, 0, serverVersionBytes.Length);
 
@@ -146,12 +152,12 @@ namespace Com.Yocero.UnityCache.Server
                     switch (command)
                     {
                         case 112: 
-                            Console.WriteLine("Process Put");
+                            logger.Info("Process Put");
                             this.ProcessPut(stream);
                             break;
 
                         case 103:
-                            Console.WriteLine("Process GET");
+                            logger.Info("Process GET");
                             this.ProcessGet(stream);
                             break;
 
@@ -166,7 +172,7 @@ namespace Com.Yocero.UnityCache.Server
             }
             catch (IOException)
             {
-                Console.WriteLine("Connection was closed by the client.");
+                logger.Info("Connection was closed by the client.");
                 this.StartAccept();
             }
         }
@@ -183,11 +189,11 @@ namespace Com.Yocero.UnityCache.Server
             // Read HASH
             string hash = UnityCacheUtilities.ReadHash(stream);
 
-            Console.WriteLine("GET: {0} => {1}", id, hash);
+            logger.Info("GET: {0} => {1}", id, hash);
 
             if (!this.fileManager.IsFileCached(id, hash))
             {
-                Console.WriteLine("GET: Cache miss. {0} {1}", id, hash);
+                logger.Info("GET: Cache miss. {0} {1}", id, hash);
 
                 // File is not cached
                 // Send command it's not cached
@@ -200,7 +206,7 @@ namespace Com.Yocero.UnityCache.Server
             } 
             else
             {
-                Console.WriteLine("GET: Cache hit. {0} {1}", id, hash);
+                logger.Info("GET: Cache hit. {0} {1}", id, hash);
 
                 using (MemoryStream memoryStream = new MemoryStream(49))
                 {
@@ -260,7 +266,7 @@ namespace Com.Yocero.UnityCache.Server
             // Read HASH
             string hash = UnityCacheUtilities.ReadHash(stream);
 
-            Console.WriteLine("PUT: {0} {1}", id, hash);
+            logger.Info("PUT: {0} {1}", id, hash);
 
             FileStream fileStream = this.fileManager.GetTemporaryFile(id, hash);
             buffer = new byte[this.streamBlockSize];

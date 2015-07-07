@@ -57,6 +57,7 @@ namespace Com.Yocero.UnityCache.Client
         /// <summary>
         /// Gets or sets the data received from the request
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Justification = "This is a test fixture, not a shipping feature")]
         public byte[] Data
         {
             get;

@@ -7,7 +7,7 @@ namespace Com.Yocero.UnityCache
     using System;
     using System.Globalization;
     using System.IO;
-    using System.Text;
+    using System.Text; 
 
     /// <summary>
     /// Unity cache server utility class
@@ -85,7 +85,7 @@ namespace Com.Yocero.UnityCache
             stream.Write(idBytes, 0, idBytes.Length);
 
             // Respond with hash
-            byte[] hashBytes = ConvertHexstringToByteArray(hash);
+            byte[] hashBytes = ConvertHexValueToByteArray(hash);
             stream.Write(hashBytes, 0, hashBytes.Length);
         }
 
@@ -113,25 +113,25 @@ namespace Com.Yocero.UnityCache
         /// <summary>
         /// Convers the string representation of hex to binary
         /// </summary>
-        /// <param name="hexstring">The string to be converted</param>
+        /// <param name="hex">The string to be converted</param>
         /// <returns>A byte array representing the string in hex.  If null or empty string was passed, null is returned.</returns>
-        public static byte[] ConvertHexstringToByteArray(string hexstring)
+        public static byte[] ConvertHexValueToByteArray(string hex)
         {
-            if (string.IsNullOrEmpty(hexstring))
+            if (string.IsNullOrEmpty(hex))
             {
                 // An empty or null array just returns null
                 return null;
             }
 
-            if (hexstring.Length % 2 != 0)
+            if (hex.Length % 2 != 0)
             {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "The binary key cannot have an odd number of digits: {0}", hexstring));
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "The binary key cannot have an odd number of digits: {0}", hex));
             }
 
-            byte[] hexAsBytes = new byte[hexstring.Length / 2];
+            byte[] hexAsBytes = new byte[hex.Length / 2];
             for (int index = 0; index < hexAsBytes.Length; index++)
             {
-                string byteValue = hexstring.Substring(index * 2, 2);
+                string byteValue = hex.Substring(index * 2, 2);
                 hexAsBytes[index] = byte.Parse(byteValue, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
             }
 

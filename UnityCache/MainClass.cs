@@ -6,12 +6,18 @@ namespace Com.Yocero.UnityCache
 {
     using System;
     using Com.Yocero.UnityCache.Server;
+using NLog;
 
     /// <summary>
     /// Main runtime class
     /// </summary>
     public static class MainClass
     {
+        /// <summary>
+        /// Stores the current class log manager
+        /// </summary>
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         /// <summary>
         /// The main runtime class
         /// </summary>
@@ -21,9 +27,9 @@ namespace Com.Yocero.UnityCache
 
             server.Start();
 
-            Console.WriteLine("Press any key to shutdown...");
+            logger.Info("Press any key to shutdown...");
             Console.ReadKey();
-            Console.WriteLine("Shutting down server...");
+            logger.Info("Shutting down server...");
             server.Stop();
          }
     }
