@@ -23,39 +23,39 @@ namespace Com.Yocero.UnityCache.Properties {
             }
         }
         
-        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("cache")]
         public string CacheRootPath {
             get {
                 return ((string)(this["CacheRootPath"]));
             }
-            set {
-                this["CacheRootPath"] = value;
-            }
         }
         
-        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("20480")]
+        [global::System.Configuration.DefaultSettingValueAttribute("90")]
         public int MaxCacheSizeMB {
             get {
                 return ((int)(this["MaxCacheSizeMB"]));
             }
-            set {
-                this["MaxCacheSizeMB"] = value;
-            }
         }
         
-        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("8125")]
         public int Port {
             get {
                 return ((int)(this["Port"]));
             }
-            set {
-                this["Port"] = value;
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.9")]
+        public decimal CacheFreePercentage {
+            get {
+                return ((decimal)(this["CacheFreePercentage"]));
             }
         }
     }

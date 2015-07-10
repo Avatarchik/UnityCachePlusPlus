@@ -61,6 +61,7 @@
       <HintPath>\\psf\src\unityCacheServer\ucs\packages\NLog.4.0.1\lib\net40\NLog.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client\UnityCacheClient.cs" />
@@ -70,6 +71,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resource.resx</DependentUpon>
     </Compile>
+    <Compile Include="Server\CacheFile.cs" />
     <Compile Include="Server\FileCacheManager.cs" />
     <Compile Include="MainClass.cs" />
     <Compile Include="AssemblyInfo.cs" />

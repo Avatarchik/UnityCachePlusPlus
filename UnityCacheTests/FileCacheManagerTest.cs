@@ -21,7 +21,5 @@ namespace UnityCacheServerTests
 
             Assert.IsNotNull(ft);
         }
-
-        // TODO: Implement rest of tests
     }
 }

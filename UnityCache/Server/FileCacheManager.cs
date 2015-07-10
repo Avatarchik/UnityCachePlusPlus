@@ -5,10 +5,13 @@
 namespace Com.Yocero.UnityCache.Server
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
+    using System.Linq;
     using System.Threading;
+    using Com.Yocero.UnityCache.Properties;
     using NLog;
 
     /// <summary>
@@ -20,6 +23,11 @@ namespace Com.Yocero.UnityCache.Server
         /// Stores the current class log manager
         /// </summary>
         private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        /// <summary>
+        /// Stores if the cache eviction is underway
+        /// </summary>
+        private bool evictingCache = false;
 
         /// <summary>
         /// Stores the location of the root folder for the cache
@@ -51,6 +59,7 @@ namespace Com.Yocero.UnityCache.Server
         /// </summary>
         /// <param name="rootPath">The root path where the cache should be kept</param>
         /// <param name="newMaxSizeMB">The maximum size of the cache in megabytes.  This server will exceed the limit in order to optimize asset throughput, so please allow a 10-20% buffer.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly", Justification = "Using correct exception for settings file validation")]
         public FileCacheManager(string rootPath, int newMaxSizeMB)
         {
             this.root = rootPath;
@@ -67,16 +76,32 @@ namespace Com.Yocero.UnityCache.Server
 
             if (!Directory.Exists(this.incoming)) 
             {
+                logger.Warn(CultureInfo.CurrentCulture, "Creating incoming folder at: {0}", this.incoming);
                 Directory.CreateDirectory(this.incoming);
             }
 
-            // TODO: Flush the incoming folder of any dead files
+            if (Settings.Default.CacheFreePercentage < 0 && Settings.Default.CacheFreePercentage > 1)
+            {
+                throw new ArgumentOutOfRangeException("CacheFreePercentage", "CacheFreePercentage must be between 0 and 1.");
+            }
+
+            this.EmptyIncomingFolder();
+            
             logger.Warn(CultureInfo.CurrentCulture, "Setting max cache size to {0} MB", this.maxSizeMB);
 
             // Queue a background task to size the cache folder
             ThreadPool.QueueUserWorkItem(new WaitCallback(this.CalculateFolderSize));
+        }
 
-            // TODO: Setup tracking of the file cleanup and additions and trigger cleanups as needed
+        /// <summary>
+        /// Gets a value indicating the root folder
+        /// </summary>
+        public string Root
+        {
+            get
+            {
+                return this.root;
+            }
         }
 
         /// <summary>
@@ -88,8 +113,7 @@ namespace Com.Yocero.UnityCache.Server
         /// <returns>A file stream to the temporary file</returns>
         public FileStream GetTemporaryFile(Guid id, string hash)
         {
-            string path = Path.Combine(this.incoming, GetFileName(id, hash));
-
+            string path = Path.Combine(this.incoming, CacheFile.GetFileName(id, hash));
             return File.OpenWrite(path);
         }
 
@@ -101,21 +125,23 @@ namespace Com.Yocero.UnityCache.Server
         /// <returns>A read only file handle to the asset</returns>
         public FileStream GetReadFileStream(Guid id, string hash)
         {
-            string path = Path.Combine(this.root, GetFolder(hash), GetFileName(id, hash));
+            string path = Path.Combine(this.root, CacheFile.GetFolder(hash), CacheFile.GetFileName(id, hash));
+            File.SetLastAccessTime(path, DateTime.Now);
             return File.OpenRead(path);
         } 
 
         /// <summary>
-        /// Moves the file from the incoming temporary folder and moves it to permanent storage
+        /// Moves the file from the incoming temporary folder and moves it to permanent storage.
+        /// The file is automatically marked as recently accessed in order to prevent it from being evicted.
         /// </summary>
         /// <param name="id">The Id of the file</param>
         /// <param name="hash">The hash of the file</param>
         public void CompleteFile(Guid id, string hash)
         {
-            string fileName = GetFileName(id, hash);
+            string fileName = CacheFile.GetFileName(id, hash);
 
             string src = Path.Combine(this.incoming, fileName);
-            string dest = this.GetFullFilePath(id, hash);
+            string dest = CacheFile.GetFullFilePath(this.root, id, hash);
 
             if (!Directory.Exists(Path.GetDirectoryName(dest))) 
             {
@@ -123,70 +149,112 @@ namespace Com.Yocero.UnityCache.Server
             }
 
             // For some reason the cache server is asking to overwrite the file, 
-            if (this.IsFileCached(id, hash))
+            if (CacheFile.IsFileCached(this.root, id, hash))
             {
-                File.Delete(this.GetFullFilePath(id, hash));
+                File.Delete(CacheFile.GetFullFilePath(this.root, id, hash));
             }
 
             File.Move(src, dest);
+            File.SetLastAccessTime(dest, DateTime.Now);
+
+            FileInfo info = new FileInfo(dest);
+            lock (this.cacheSizeBytesLock)
+            {
+                // Increment the cache size by adding a file
+                this.cacheSizeBytes += (ulong)info.Length;
+                int limit = Settings.Default.MaxCacheSizeMB * 1048576;
+
+                // Check we haven't exceeded the cap
+                if (this.cacheSizeBytes > (ulong)limit && !this.evictingCache)
+                {
+                    // We've exceeded the cache cap, request a cleanup
+                    this.evictingCache = true;
+                    ThreadPool.QueueUserWorkItem(new WaitCallback(this.Evict));
+                }
+            }
+
+            // Store a hit on the ojbect
+            File.SetLastAccessTime(dest, DateTime.Now);
 
             logger.Info(CultureInfo.CurrentCulture, "Moving {0} to permanent cache", fileName);
         }
 
         /// <summary>
-        /// Returns the full path of a given file
+        /// Clears out all the files in the incoming folder
         /// </summary>
-        /// <param name="id">The Id of the file</param>
-        /// <param name="hash">The hash of the file</param>
-        /// <returns>The full path of the file</returns>
-        public string GetFullFilePath(Guid id, string hash) 
+        private void EmptyIncomingFolder()
         {
-            return Path.Combine(this.root, GetFolder(hash), GetFileName(id, hash));
+            logger.Warn("Emptying incoming folder of any incomplete downloads.");
+            DirectoryInfo downloadedMessageInfo = new DirectoryInfo(this.incoming);
+
+            foreach (FileInfo file in downloadedMessageInfo.GetFiles())
+            {
+                file.Delete();
+            }
         }
 
         /// <summary>
-        /// Determines if the given file is cached or not
+        /// Walks through all assets in the file system and evicts any items that occur in the past
+        /// to take the cache file system below the requested limit.
+        /// This should only be called in a background thread since this is a time intensive operation.
         /// </summary>
-        /// <param name="id">The Id of the file</param>
-        /// <param name="hash">The hash of the file</param>
-        /// <returns>True if the file is cached, false otherwise</returns>
-        public bool IsFileCached(Guid id, string hash)
+        /// <param name="state">Ignored, object state</param>
+        private void Evict(object state)
         {
-            return File.Exists(this.GetFullFilePath(id, hash));
-        }
+            ulong cacheLimitBytes = (ulong)Settings.Default.MaxCacheSizeMB * 1048576;
 
-        /// <summary>
-        /// Gets the file size of a given file
-        /// </summary>
-        /// <param name="id">The Id of the file to get the size of</param>
-        /// <param name="hash">The has of the file</param>
-        /// <returns>The file size in bytes</returns>
-        internal ulong GetFileSizeBytes(Guid id, string hash)
-        {
-            // TODO: Replace all string.Format with Path.Join
-            FileInfo info = new FileInfo(this.GetFullFilePath(id, hash));
-            return (ulong)info.Length;
-        }
+            if (this.cacheSizeBytes < cacheLimitBytes)
+            {
+                // Cache isn't big enough to evict
+                logger.Info(
+                    "Cache isn't large enough to require eviction.  Max: {0} MB, Current: {1} MB",
+                    Settings.Default.MaxCacheSizeMB,
+                    this.cacheSizeBytes / 1048576);
+                return;
+            }
 
-        /// <summary>
-        /// Returns a file name for the given id and hash combination
-        /// </summary>
-        /// <param name="id">The Id of the file</param>
-        /// <param name="hash">The has of the file</param>
-        /// <returns>The filename of the file</returns>
-        private static string GetFileName(Guid id, string hash)
-        {
-            return string.Format(CultureInfo.CurrentCulture, "{0}_{1}.data", id, hash);
-        }
+            logger.Warn(
+                "Cache eviction is starting to prune.  Max: {0} MB, Current: {1} MB", 
+                Settings.Default.MaxCacheSizeMB,
+                this.cacheSizeBytes / 1048576);
 
-        /// <summary>
-        /// Returns the folder where the hash should be stored
-        /// </summary>
-        /// <param name="hash">The hash of the folder</param>
-        /// <returns>The file's folder name</returns>
-        private static string GetFolder(string hash)
-        {
-            return hash.Substring(0, 2);
+            List<CacheFile> fileData = this.EnumerateAllCacheFiles();
+
+            // Run the list of elements and delete the files that were accessed the furthest in the past
+            var filesSorted = from a in fileData
+                        orderby a.LastAccessed ascending
+                        select a;
+            IEnumerator<CacheFile> fileEnumerator = filesSorted.GetEnumerator();
+            fileEnumerator.MoveNext();
+
+            // Delete files until we are within 90% of the limit
+            while (this.cacheSizeBytes > (cacheLimitBytes * Settings.Default.CacheFreePercentage))
+            {
+                CacheFile file = fileEnumerator.Current;
+
+                lock (this.cacheSizeBytesLock)
+                {
+                    this.cacheSizeBytes -= (ulong)file.Length;
+                }
+
+                logger.Warn(
+                    "Deleting last accessed {1} file {0}", 
+                    file.LastAccessed, 
+                    CacheFile.GetFileName(file.Id, file.Hash));
+                File.Delete(CacheFile.GetFullFilePath(this.root, file.Id, file.Hash));
+
+                if (!fileEnumerator.MoveNext())
+                {
+                    // There are no more files to clean
+                    break;
+                }
+            }
+
+            logger.Warn(
+                "Cache eviction is complete.  Max: {0} MB, Current: {1} MB",
+                Settings.Default.MaxCacheSizeMB,
+                this.cacheSizeBytes / 1048576);
+            this.evictingCache = false;
         }
 
         /// <summary>
@@ -195,20 +263,61 @@ namespace Com.Yocero.UnityCache.Server
         /// <param name="stateInfo">Unused, ignored</param>
         private void CalculateFolderSize(object stateInfo)
         {
-            logger.Warn("Determining cache folder size");
-
-            IEnumerable<string> files = Directory.EnumerateFiles(this.root, "*", SearchOption.AllDirectories);
-
-            foreach (string file in files)
+            logger.Warn("Determining cache folder size and marking items for eviction");
+            lock (this.cacheSizeBytesLock)
             {
-                FileInfo info = new FileInfo(file);
+                this.cacheSizeBytes = 0;
+            }
+
+            List<CacheFile> files = this.EnumerateAllCacheFiles();
+
+            foreach (CacheFile file in files)
+            {
                 lock (this.cacheSizeBytesLock)
                 {
-                    this.cacheSizeBytes += (ulong)info.Length;
+                    this.cacheSizeBytes += (ulong)file.Length;
                 }
             }
 
             logger.Warn(CultureInfo.CurrentCulture, "Folder sizing complete, cache size: {0} MB", this.cacheSizeBytes / (1024 * 1024));
+
+            // Request eviction since we might be oversize
+            ThreadPool.QueueUserWorkItem(new WaitCallback(this.Evict));
+        }
+
+        /// <summary>
+        /// Produces a list of all the files currently in the cache
+        /// </summary>
+        /// <returns>A list of all files in the cache</returns>
+        private List<CacheFile> EnumerateAllCacheFiles()
+        {
+            IEnumerable<string> files = Directory.EnumerateFiles(this.root, "*.data", SearchOption.AllDirectories);
+            List<CacheFile> fileData = new List<CacheFile>();
+
+            // Build a list of objects we can query
+            foreach (string file in files)
+            {
+                Guid id;
+                string hash = string.Empty;
+
+                if (file.Contains(this.incoming))
+                {
+                    // This is in the incoming folder, skip it
+                    continue;
+                }
+
+                if (!CacheFile.ParseFileName(Path.GetFileName(file), out id, out hash))
+                {
+                    // Not a cache file, skip it
+                    continue;
+                }
+
+                CacheFile cacheFile = new CacheFile();
+                cacheFile.Load(this.root, id, hash);
+                fileData.Add(cacheFile);
+            }
+
+            return fileData;
         }
     }
 }

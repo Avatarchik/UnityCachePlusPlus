@@ -152,12 +152,10 @@ namespace Com.Yocero.UnityCache.Server
                     switch (command)
                     {
                         case 112: 
-                            logger.Info("Process Put");
                             this.ProcessPut(stream);
                             break;
 
                         case 103:
-                            logger.Info("Process GET");
                             this.ProcessGet(stream);
                             break;
 
@@ -191,7 +189,7 @@ namespace Com.Yocero.UnityCache.Server
 
             logger.Info("GET: {0} => {1}", id, hash);
 
-            if (!this.fileManager.IsFileCached(id, hash))
+            if (!CacheFile.IsFileCached(this.fileManager.Root, id, hash))
             {
                 logger.Info("GET: Cache miss. {0} {1}", id, hash);
 
@@ -216,7 +214,7 @@ namespace Com.Yocero.UnityCache.Server
                     memoryStream.Write(code, 0, 1);
 
                     // Send the file size in bytes
-                    ulong bytesToBeWritten = this.fileManager.GetFileSizeBytes(id, hash);   // Dumb off by 1 hack
+                    ulong bytesToBeWritten = CacheFile.GetFileSizeBytes(this.fileManager.Root, id, hash);   // Dumb off by 1 hack
                     byte[] fileSizeBytes = UnityCacheUtilities.GetUlongAsAsciiBytes(bytesToBeWritten);
                     memoryStream.Write(fileSizeBytes, 0, fileSizeBytes.Length);
 
