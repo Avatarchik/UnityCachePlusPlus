@@ -34,7 +34,7 @@ namespace Com.Yocero.UnityCache.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("90")]
+        [global::System.Configuration.DefaultSettingValueAttribute("1024")]
         public int MaxCacheSizeMB {
             get {
                 return ((int)(this["MaxCacheSizeMB"]));

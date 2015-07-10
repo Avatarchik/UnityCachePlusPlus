@@ -183,11 +183,7 @@ namespace Com.Yocero.UnityCache.Server
         {
             // Read ID
             Guid id = UnityCacheUtilities.ReadGuid(stream);
-
-            // Read HASH
             string hash = UnityCacheUtilities.ReadHash(stream);
-
-            logger.Info("GET: {0} => {1}", id, hash);
 
             if (!CacheFile.IsFileCached(this.fileManager.Root, id, hash))
             {
