@@ -1,5 +1,5 @@
 // <copyright file="AssemblyInfo.cs" company="Gabe Brown">
-//     Copyright (c) Gabe Brown. All rights reserved.
+//     Copyright (c) Yocero, LLC All rights reserved.
 // </copyright>
 
 using System;

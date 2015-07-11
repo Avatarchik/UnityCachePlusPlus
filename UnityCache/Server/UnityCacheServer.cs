@@ -1,5 +1,5 @@
 // <copyright file="UnityCacheServer.cs" company="Gabe Brown">
-//     Copyright (c) Gabe Brown. All rights reserved.
+//     Copyright (c) Yocero, LLC All rights reserved.
 // </copyright>
 
 namespace Com.Yocero.UnityCache.Server
@@ -12,6 +12,7 @@ namespace Com.Yocero.UnityCache.Server
     using System.Text;
     using Com.Yocero.UnityCache.Properties;
     using NLog;
+    using System.Threading;
 
     /// <summary>
     /// The Unity cache server 
@@ -123,10 +124,21 @@ namespace Com.Yocero.UnityCache.Server
 
             // Allow other threads to listen for connections while this one is processed
             this.StartAccept();
+            TcpClient client = this.socket.EndAcceptTcpClient(ar);
 
+
+            ThreadPool.QueueUserWorkItem(new WaitCallback(HandleConnection), (object)client);
+        }
+
+        /// <summary>
+        /// Handles the connection
+        /// </summary>
+        /// <param name="state">The TcpClient for the connection</param>
+        private void HandleConnection(object state)
+        {
             try
             {
-                TcpClient client = this.socket.EndAcceptTcpClient(ar);
+                TcpClient client = (TcpClient)state;
 
                 logger.Info("Accepting connection from " + client.Client.RemoteEndPoint.ToString());
 
@@ -146,12 +158,12 @@ namespace Com.Yocero.UnityCache.Server
                 stream.Write(serverVersionBytes, 0, serverVersionBytes.Length);
 
                 int command = 0;
-                
+
                 while ((command = stream.ReadByte()) != -1)
                 {
                     switch (command)
                     {
-                        case 112: 
+                        case 112:
                             this.ProcessPut(stream);
                             break;
 

@@ -1,5 +1,5 @@
 ﻿// <copyright file="CacheFile.cs" company="Gabe Brown">
-//     Copyright (c) Gabe Brown. All rights reserved.
+//     Copyright (c) Yocero, LLC All rights reserved.
 // </copyright>
 
 namespace Com.Yocero.UnityCache.Server
